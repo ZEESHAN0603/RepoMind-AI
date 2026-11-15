@@ -1,0 +1,1185 @@
+# MASTER DEVELOPMENT PROMPT — REPOMIND
+
+## 1. ROLE AND RESPONSIBILITY
+
+Act as a Senior Full-Stack Software Architect, Senior React/TypeScript Engineer, UI/UX Designer, AI Engineer, and Code Intelligence Specialist.
+
+Your responsibility is to help me build a production-quality SaaS application called **RepoMind — AI-Powered Repository Intelligence Platform**.
+
+You must think like an experienced software engineer. Prioritize:
+- Correct architecture.
+- Maintainable and scalable code.
+- Clean UI/UX.
+- Strong separation of responsibilities.
+- Security.
+- Performance.
+- Type safety.
+- Realistic implementation.
+- Backend compatibility.
+- Clear error handling.
+
+Do not generate random code or make assumptions about requirements.
+
+Before implementing anything, understand the project requirements and follow the development phases and constraints described below.
+
+---
+
+# 2. PROJECT OVERVIEW
+
+## Project Name
+RepoMind
+
+## Tagline
+"Understand any codebase. Trace every connection. Explain every flow."
+
+## Project Description
+
+RepoMind is an AI-powered repository intelligence platform that helps developers understand, explore, analyze, and maintain complex software repositories.
+
+A developer should be able to:
+
+1. Connect a public GitHub repository using its URL.
+2. Connect a private GitHub repository through authorized GitHub access.
+3. Upload a repository as a ZIP file.
+4. Automatically analyze the repository.
+5. Explore its complete folder and file structure.
+6. Understand individual files, functions, classes, and APIs.
+7. Ask questions about the repository using an AI assistant.
+8. Visualize the software architecture.
+9. Trace function execution paths across multiple files.
+10. Detect circular dependencies.
+11. Track repository changes across commits.
+12. Automatically generate technical documentation.
+
+The platform must behave like an intelligent developer companion rather than a basic chatbot.
+
+## Main Product Principle
+
+AI explanations must be grounded in actual repository information.
+
+The application must distinguish between:
+
+- Verified: directly supported by source code or static analysis.
+- Inferred: logically estimated from available code information.
+- Unknown: insufficient evidence to establish the behavior.
+
+Never present an inferred execution path or architecture relationship as a verified fact.
+
+---
+
+# 3. DEVELOPMENT STRATEGY — STRICTLY FOLLOW
+
+Development must happen in the following phases:
+
+### Phase 1 — Complete Frontend Development
+Build the entire frontend using mock data.
+
+### Phase 2 — Backend Foundation and Repository Ingestion
+Develop APIs, authentication, database, GitHub integration, and ZIP processing.
+
+### Phase 3 — Code Intelligence and Static Analysis
+Develop language detection, file analysis, symbol extraction, dependency analysis, and repository indexing.
+
+### Phase 4 — AI Integration and RAG
+Integrate Ollama, Gemini fallback, embeddings, vector search, and repository-specific chat.
+
+### Phase 5 — Architecture and Execution Intelligence
+Implement interactive architecture generation, execution tracing, and circular dependency analysis.
+
+### Phase 6 — Repository Update Intelligence
+Implement commit comparison, incremental analysis, and repository synchronization.
+
+### Phase 7 — Automatic Documentation
+Implement AI-generated technical documentation.
+
+### Phase 8 — Integration, Testing, and Deployment
+Connect all modules, perform security testing, optimize performance, and deploy.
+
+## CRITICAL DEVELOPMENT RULE
+
+**Complete Phase 1 entirely before starting Phase 2.**
+
+Do not start backend development while building the frontend.
+
+Do not connect real AI models during Phase 1.
+
+Do not create real GitHub API integrations during Phase 1.
+
+Do not implement database functionality during Phase 1.
+
+Use realistic mock data and mock services.
+
+The frontend must be architected so that real backend services can replace mock services later without rewriting the UI.
+
+---
+
+# 4. PHASE 1 — FRONTEND REQUIREMENTS
+
+## Objective
+
+Build a complete, professional, responsive frontend for RepoMind.
+
+At the end of Phase 1, the application must look and behave like a fully developed SaaS product, even though it uses mock data.
+
+The following interactions must work:
+- Navigation.
+- Forms and validation.
+- Search and filtering.
+- Repository selection.
+- Mock repository addition.
+- Simulated ZIP upload.
+- Simulated repository analysis.
+- File exploration.
+- Code viewing.
+- Architecture graph interaction.
+- Execution flow selection.
+- Circular dependency visualization.
+- Documentation editing and preview.
+- Mock AI chat.
+- Settings management.
+- Dark and light themes.
+
+---
+
+# 5. FRONTEND TECHNOLOGY STACK
+
+Use the following stack:
+
+### Core
+- React
+- TypeScript
+- Vite
+
+### Styling and UI
+- Tailwind CSS
+- shadcn/ui
+- Lucide React
+- Inter font
+
+### Routing
+- React Router
+
+### State Management
+- Zustand
+
+### Data Fetching Architecture
+- TanStack Query
+
+### Architecture Visualization
+- React Flow (`@xyflow/react`)
+
+### Code Editor
+- Monaco Editor
+
+### Documentation Visualization
+- Markdown editor and preview.
+- Mermaid diagrams where appropriate.
+
+### Additional Requirements
+- Use reusable components.
+- Use responsive layouts.
+- Use proper TypeScript interfaces.
+- Use centralized theme tokens.
+- Use reusable form validation.
+- Use loading, empty, success, and error states.
+
+Use compatible, current stable package versions. Verify installation and configuration commands against official documentation rather than relying on outdated tutorials.
+
+Do not install unnecessary libraries.
+
+---
+
+# 6. DESIGN SYSTEM AND UI/UX REQUIREMENTS
+
+Create a premium developer-focused SaaS interface.
+
+The design should feel like a combination of:
+- Modern developer tools.
+- Professional code editors.
+- Enterprise SaaS dashboards.
+- AI productivity platforms.
+
+Avoid generic template-like dashboards.
+
+## Theme Support
+
+Implement two complete themes:
+
+1. Dark theme.
+2. Light theme.
+
+Both themes must have identical layouts and functionality.
+
+Only their design tokens should change.
+
+Persist the user's theme preference in local storage.
+
+### Dark Theme
+- Dark charcoal application background.
+- Slightly lighter sidebar and cards.
+- Subtle borders.
+- Clear text contrast.
+- Indigo/violet accent colors.
+
+### Light Theme
+- White or soft-gray backgrounds.
+- Clean cards.
+- Subtle gray borders.
+- Dark readable text.
+- Matching indigo/violet accent colors.
+
+### Color Semantics
+- Indigo/Violet: primary actions and highlights.
+- Green: success and completed status.
+- Amber: warnings and pending status.
+- Red: failures, destructive actions, and errors.
+- Gray: secondary information.
+
+Do not use excessive gradients, unnecessary animations, or distracting effects.
+
+## Layout
+
+Use a responsive application shell containing:
+
+### Sidebar
+- RepoMind logo.
+- Dashboard.
+- Repositories.
+- Settings.
+- User profile.
+- Collapse/expand functionality.
+
+When a repository is selected, display repository-specific navigation:
+
+- Overview.
+- Explorer.
+- Architecture.
+- Execution Tracing.
+- Dependencies.
+- Updates.
+- Documentation.
+- AI Assistant.
+
+### Header
+- Page title or breadcrumb.
+- Global search.
+- Notifications.
+- Theme switch.
+- Profile menu.
+
+### Main Content
+- Responsive content area.
+- Consistent spacing.
+- Reusable cards.
+- Tables where useful.
+- Proper loading and empty states.
+
+---
+
+# 7. COMPLETE APPLICATION ROUTES
+
+Create all 15 routes.
+
+| No. | Page | Route |
+|---|---|---|
+| 1 | Landing Page | `/` |
+| 2 | Sign In | `/login` |
+| 3 | Sign Up | `/register` |
+| 4 | Dashboard | `/dashboard` |
+| 5 | Repository Management | `/repositories` |
+| 6 | Add Repository | `/repositories/add` |
+| 7 | Repository Overview | `/repositories/:id` |
+| 8 | Project Explorer | `/repositories/:id/explorer` |
+| 9 | Architecture Graph | `/repositories/:id/architecture` |
+| 10 | Execution Tracing | `/repositories/:id/execution` |
+| 11 | Dependency Analysis | `/repositories/:id/dependencies` |
+| 12 | Repository Updates | `/repositories/:id/updates` |
+| 13 | Documentation Center | `/repositories/:id/docs` |
+| 14 | AI Assistant | `/repositories/:id/assistant` |
+| 15 | Settings | `/settings` |
+
+All routes must render correctly.
+
+Use route guards or mock authentication where appropriate.
+
+Provide a useful 404 page for unknown routes.
+
+---
+
+# 8. PAGE-BY-PAGE FUNCTIONAL REQUIREMENTS
+
+## 8.1 Landing Page
+
+Route: `/`
+
+Sections:
+
+1. Navigation bar.
+2. Hero section.
+3. GitHub repository URL input.
+4. Connect repository CTA.
+5. ZIP upload CTA.
+6. Product feature showcase.
+7. How it works.
+8. Architecture visualization preview.
+9. Benefits and use cases.
+10. Footer.
+
+The hero should clearly communicate the product's value.
+
+Do not use fake customer testimonials or fabricated company statistics.
+
+The GitHub URL input should validate its format and simulate adding a sample repository.
+
+## 8.2 Sign In
+
+Route: `/login`
+
+Features:
+- Email input.
+- Password input.
+- Show/hide password.
+- Form validation.
+- Remember me.
+- Forgot password UI.
+- Mock GitHub login.
+- Mock authentication.
+- Loading state.
+- Error state.
+
+Do not implement real authentication in Phase 1.
+
+## 8.3 Sign Up
+
+Route: `/register`
+
+Features:
+- Name.
+- Email.
+- Password.
+- Confirm password.
+- Validation.
+- Password visibility.
+- Terms acceptance.
+- Mock registration.
+- Success and error states.
+
+## 8.4 Dashboard
+
+Route: `/dashboard`
+
+Display:
+
+### Statistics
+- Total repositories.
+- Successfully analyzed repositories.
+- Total source files.
+- Detected programming languages.
+
+### Main Sections
+- Language distribution chart.
+- Recent repositories.
+- Recent activity.
+- Repository analysis status.
+- Quick connect repository.
+- AI provider status.
+
+Use realistic mock data.
+
+## 8.5 Repository Management
+
+Route: `/repositories`
+
+Features:
+- Repository cards or table.
+- Search repositories.
+- Filter by language.
+- Filter by status.
+- Sort repositories.
+- Display last commit.
+- Display analysis status.
+- Open repository.
+- Delete repository.
+- Archive repository.
+- Empty state.
+
+Use confirmation dialogs for destructive operations.
+
+## 8.6 Add Repository
+
+Route: `/repositories/add`
+
+Provide two methods:
+
+### Method A — GitHub Repository
+
+- Repository URL input.
+- URL validation.
+- Branch selector.
+- Public/private repository UI.
+- Connect repository button.
+
+### Method B — ZIP Upload
+
+- Drag-and-drop area.
+- File picker.
+- ZIP format validation.
+- Upload progress.
+- File name and size.
+- Remove uploaded file.
+
+After submission, simulate analysis using a progress interface.
+
+Display stages such as:
+
+1. Validating repository.
+2. Extracting files.
+3. Detecting languages.
+4. Building project structure.
+5. Analyzing dependencies.
+6. Preparing repository intelligence.
+
+These are mock stages only.
+
+## 8.7 Repository Overview
+
+Route: `/repositories/:id`
+
+Display:
+
+- Repository name.
+- Owner.
+- GitHub URL.
+- Default branch.
+- Latest commit.
+- Description.
+- Languages.
+- Frameworks.
+- Total files.
+- Total folders.
+- Last analyzed time.
+- Analysis status.
+
+Additional sections:
+
+- Folder structure preview.
+- Dependency summary.
+- Recent commits.
+- Recent updates.
+- Important modules.
+- Quick links to repository features.
+
+## 8.8 Project Explorer
+
+Route: `/repositories/:id/explorer`
+
+Build a three-panel developer interface.
+
+### Panel 1 — File Explorer
+- Folder tree.
+- Expand/collapse.
+- File icons.
+- File search.
+- File selection.
+
+### Panel 2 — Code Viewer
+- Syntax highlighting.
+- Line numbers.
+- File tabs.
+- Function/class selection.
+- Copy code.
+- Read-only code view.
+
+Use Monaco Editor if appropriate.
+
+### Panel 3 — AI Explanation
+- Selected file explanation.
+- Function explanation.
+- Class explanation.
+- Related files.
+- Important dependencies.
+- Source references.
+
+Use mock explanations.
+
+Never invent code relationships and present them as real analysis results.
+
+## 8.9 Architecture Graph
+
+Route: `/repositories/:id/architecture`
+
+Use React Flow.
+
+Features:
+
+- Interactive graph.
+- Zoom.
+- Pan.
+- Search nodes.
+- Filter by category.
+- Frontend/backend/API/database/module categories.
+- Node selection.
+- Connection highlighting.
+- Node details panel.
+- Related source file navigation.
+
+Provide realistic sample architecture data.
+
+The graph must be interactive, not just a static image.
+
+## 8.10 Execution Tracing
+
+Route: `/repositories/:id/execution`
+
+Features:
+
+- Function search.
+- API endpoint search.
+- Caller information.
+- Callee information.
+- Execution sequence.
+- File path.
+- Line number.
+- Data flow representation.
+- Related function navigation.
+
+Show execution paths with clear step ordering.
+
+Provide status indicators:
+
+- Verified.
+- Inferred.
+- Unresolved.
+
+Do not imply that mock traces are real runtime execution results.
+
+## 8.11 Dependency Analysis
+
+Route: `/repositories/:id/dependencies`
+
+Features:
+
+- Dependency graph.
+- Import relationships.
+- Circular dependency detection results.
+- Cycle details.
+- Affected modules.
+- Severity indicators.
+- Source file navigation.
+- Filter by dependency category.
+
+Use realistic mock circular dependency examples.
+
+The UI must make it clear that the displayed results are sample analysis data.
+
+## 8.12 Repository Updates
+
+Route: `/repositories/:id/updates`
+
+Display:
+
+- Current commit.
+- Latest commit.
+- Commit history.
+- Changed files.
+- Added files.
+- Modified files.
+- Deleted files.
+- Change summary.
+- Analysis status.
+
+Show simulated incremental re-indexing progress.
+
+Do not connect to real GitHub in Phase 1.
+
+## 8.13 Documentation Center
+
+Route: `/repositories/:id/docs`
+
+Documentation types:
+
+1. README.
+2. Architecture documentation.
+3. Module documentation.
+4. API documentation.
+5. Database documentation.
+6. Developer onboarding documentation.
+
+Features:
+
+- Documentation selection.
+- Markdown editor.
+- Preview mode.
+- Edit content.
+- Mock save.
+- Regenerate documentation.
+- Export UI.
+
+Use sample Markdown content.
+
+## 8.14 AI Assistant
+
+Route: `/repositories/:id/assistant`
+
+Features:
+
+- Repository-specific chat UI.
+- Message history.
+- New conversation.
+- Suggested questions.
+- Context indicator.
+- Code snippets.
+- File path citations.
+- Line number citations.
+- Copy response.
+- Loading indicator.
+- Error state.
+
+Use a mock response service.
+
+Every mock answer should clearly be sample output, not a response generated by a real AI model.
+
+Sample suggested questions:
+
+- Explain the overall project architecture.
+- Where is authentication handled?
+- Trace the login execution flow.
+- Which modules depend on the database?
+- Are there circular dependencies?
+- Explain this function.
+- How does the frontend communicate with the backend?
+
+## 8.15 Settings
+
+Route: `/settings`
+
+Sections:
+
+### Profile
+- Name.
+- Email.
+- Profile picture placeholder.
+
+### Appearance
+- Dark theme.
+- Light theme.
+- Theme persistence.
+
+### AI Providers
+- Ollama configuration UI.
+- Gemini API configuration UI.
+- Primary provider selection.
+- Fallback provider selection.
+- Provider connection status.
+
+### Model Configuration
+- Generation model.
+- Embedding model.
+- Temperature or generation settings where relevant.
+
+### Repository Preferences
+- Default branch preference.
+- Analysis preferences.
+
+### Privacy
+- Repository access information.
+- Token management UI.
+- Data handling information.
+
+Important: these are frontend mock settings only. Never store real API keys or secrets in frontend source code or local storage.
+
+---
+
+# 9. MOCK DATA AND SERVICE ARCHITECTURE
+
+This requirement is mandatory.
+
+**Never hardcode mock data directly inside page components.**
+
+Separate:
+- Types.
+- Mock data.
+- Service interfaces.
+- Mock service implementations.
+- UI components.
+
+For example:
+
+```ts
+export interface Repository {
+  id: string;
+  name: string;
+  owner: string;
+  url: string;
+  branch: string;
+  commitSha: string;
+  language: string;
+  framework: string[];
+  status: "pending" | "analyzing" | "completed" | "failed";
+  fileCount: number;
+  lastAnalyzed: string;
+}
+
+export interface RepositoryService {
+  getRepositories(): Promise<Repository[]>;
+  getRepository(id: string): Promise<Repository>;
+  addRepository(url: string): Promise<Repository>;
+  deleteRepository(id: string): Promise<void>;
+}
+```
+
+Create mock implementations separately.
+
+For example:
+
+```text
+src/
+  services/
+    api/
+      repository.service.ts
+    mock/
+      repository.mock.ts
+      assistant.mock.ts
+      architecture.mock.ts
+      execution.mock.ts
+      dependency.mock.ts
+      documentation.mock.ts
+```
+
+Use a service abstraction that allows Phase 2 to replace mock services with real API services.
+
+Do not make page components dependent on mock implementation details.
+
+Use asynchronous mock responses where necessary to simulate realistic loading states.
+
+---
+
+# 10. FRONTEND FOLDER STRUCTURE
+
+Use a scalable structure similar to:
+
+```text
+repomind/
+├── public/
+├── src/
+│   ├── app/
+│   │   ├── App.tsx
+│   │   ├── router.tsx
+│   │   └── providers.tsx
+│   │
+│   ├── components/
+│   │   ├── layout/
+│   │   ├── common/
+│   │   └── ui/
+│   │
+│   ├── features/
+│   │   ├── landing/
+│   │   ├── auth/
+│   │   ├── dashboard/
+│   │   ├── repositories/
+│   │   ├── explorer/
+│   │   ├── architecture/
+│   │   ├── execution/
+│   │   ├── dependencies/
+│   │   ├── updates/
+│   │   ├── documentation/
+│   │   ├── assistant/
+│   │   └── settings/
+│   │
+│   ├── services/
+│   │   ├── api/
+│   │   └── mock/
+│   │
+│   ├── stores/
+│   ├── hooks/
+│   ├── types/
+│   ├── utils/
+│   ├── constants/
+│   ├── assets/
+│   └── styles/
+│
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
+```
+
+You may add folders when technically justified, but do not create unnecessary abstractions.
+
+---
+
+# 11. PHASE 1 DEVELOPMENT MILESTONES
+
+Follow these milestones in order.
+
+### Milestone 1.1 — Project Initialization
+- Initialize Vite React TypeScript.
+- Install dependencies.
+- Configure Tailwind CSS.
+- Configure shadcn/ui.
+- Configure React Router.
+- Create the initial folder structure.
+- Verify development server.
+
+### Milestone 1.2 — Theme System
+- Implement design tokens.
+- Implement dark theme.
+- Implement light theme.
+- Implement theme switching.
+- Persist theme preference.
+
+### Milestone 1.3 — Application Layout
+- Sidebar.
+- Header.
+- Breadcrumbs.
+- Main content layout.
+- Responsive navigation.
+
+### Milestone 1.4 — Landing and Authentication
+- Landing page.
+- Sign-in page.
+- Registration page.
+- Mock authentication.
+
+### Milestone 1.5 — Dashboard and Repository Management
+- Dashboard analytics.
+- Repository list.
+- Search and filtering.
+- Add repository.
+- ZIP upload simulation.
+
+### Milestone 1.6 — Repository Overview and Explorer
+- Repository overview.
+- Folder explorer.
+- Code viewer.
+- AI explanation panel.
+
+### Milestone 1.7 — Architecture and Execution
+- React Flow architecture graph.
+- Node interactions.
+- Execution tracing interface.
+
+### Milestone 1.8 — Dependency and Update Modules
+- Dependency visualization.
+- Circular dependency display.
+- Commit history.
+- Update interface.
+
+### Milestone 1.9 — Documentation and AI Assistant
+- Documentation editor.
+- Markdown preview.
+- Mock AI chat.
+- Source citations.
+
+### Milestone 1.10 — Settings and Mock Services
+- Settings UI.
+- AI provider settings.
+- Service abstraction.
+- Mock service integration.
+
+### Milestone 1.11 — Responsive Design and Testing
+- Desktop testing.
+- Tablet testing.
+- Mobile testing.
+- Route testing.
+- TypeScript validation.
+- Production build.
+- Bug fixing.
+
+**Do not skip milestones or combine multiple milestones without my approval.**
+
+---
+
+# 12. STRICT CODING CONSTRAINTS
+
+Follow every constraint below.
+
+## Code Quality
+1. Use TypeScript for all application code.
+2. Avoid `any` unless absolutely necessary and explicitly justified.
+3. Define interfaces and types for application data.
+4. Use reusable components.
+5. Avoid unnecessary code duplication.
+6. Keep components focused and manageable.
+7. Separate UI, state, services, and utilities.
+8. Use meaningful variable and function names.
+9. Remove unused imports and dead code.
+10. Do not leave unexplained TODO comments.
+
+## React Rules
+1. Follow React Hooks rules.
+2. Avoid unnecessary re-renders.
+3. Use stable keys when rendering lists.
+4. Keep state in the appropriate component or store.
+5. Avoid prop drilling when shared state is more appropriate.
+6. Do not manipulate the DOM unnecessarily.
+7. Use React Router for navigation.
+
+## Styling Rules
+1. Use Tailwind CSS consistently.
+2. Reuse design tokens.
+3. Support both themes throughout the application.
+4. Avoid large amounts of inline styling.
+5. Do not use random colors on individual pages.
+6. Maintain consistent spacing and typography.
+7. Make layouts responsive.
+8. Ensure readable contrast.
+
+## Architecture Rules
+1. Never hardcode mock data in page components.
+2. Keep mock data in separate files.
+3. Keep service interfaces independent of their implementations.
+4. Avoid coupling the frontend to future backend implementation details.
+5. Centralize route definitions.
+6. Centralize shared configuration.
+7. Use environment variables only for appropriate public frontend configuration.
+8. Never expose secrets in frontend code.
+
+## UI Rules
+1. Every visible button must perform an action.
+2. Every form must have validation.
+3. Every loading state must be meaningful.
+4. Every empty state must explain what the user can do.
+5. Every error state must provide useful feedback.
+6. Destructive actions must require confirmation.
+7. Do not create nonfunctional decorative controls.
+8. Do not use fake testimonials, fake customers, or fabricated performance statistics.
+9. Clearly label sample data where users could mistake it for real analysis.
+
+## Performance Rules
+1. Avoid unnecessary dependencies.
+2. Lazy-load large routes or components where appropriate.
+3. Avoid unnecessarily large bundled assets.
+4. Use efficient rendering for large file trees and graphs.
+5. Avoid unnecessary expensive computations during rendering.
+
+---
+
+# 13. FUTURE BACKEND AND AI ARCHITECTURE CONSTRAINTS
+
+These requirements guide frontend design but must not be implemented as backend functionality during Phase 1.
+
+## AI Provider Architecture
+
+The planned AI architecture is:
+
+- Primary provider: Ollama.
+- Fallback provider: Gemini API.
+
+Use a provider-independent interface in the future backend.
+
+The frontend should display provider settings without directly calling either provider.
+
+The future provider manager must be able to handle:
+- Ollama connection failure.
+- Model unavailable.
+- Inference timeout.
+- Resource limitations.
+- Configured fallback conditions.
+
+Do not assume a fallback succeeded until the backend confirms it.
+
+Generation and embedding models must be configured separately.
+
+Candidate models are not final selections. Benchmark them before locking the implementation.
+
+## Static Analysis vs AI
+
+Static analysis should determine:
+- Imports.
+- Exports.
+- Function definitions.
+- Class definitions.
+- Dependency relationships.
+- Circular dependencies.
+- Source locations.
+
+AI should help with:
+- Explanations.
+- Summaries.
+- Documentation.
+- Natural-language repository questions.
+
+Do not use an LLM as the sole source of truth for deterministic code relationships.
+
+## Security Requirements
+
+The future backend must:
+
+- Treat repositories and uploaded ZIPs as untrusted input.
+- Prevent ZIP path traversal.
+- Limit file count, file size, and decompressed size.
+- Avoid executing repository code during normal analysis.
+- Protect private repository credentials.
+- Enforce tenant isolation.
+- Apply least-privilege GitHub access.
+- Detect and redact exposed secrets.
+- Defend against prompt injection in source code, README files, and comments.
+- Apply CPU, memory, and processing time limits.
+- Isolate any future code execution in restricted disposable environments.
+
+The frontend must never claim these backend security controls are already implemented.
+
+---
+
+# 14. TESTING AND ACCEPTANCE CRITERIA
+
+Phase 1 is complete only when all the following conditions are satisfied.
+
+| No. | Acceptance requirement |
+|---|---|
+| 1 | React + TypeScript + Vite initializes successfully |
+| 2 | Dark and light themes work throughout |
+| 3 | All 15 routes render |
+| 4 | Sidebar and navigation work |
+| 5 | Landing and authentication pages work with mock data |
+| 6 | Dashboard displays sample analytics |
+| 7 | GitHub URL and ZIP upload interactions work |
+| 8 | Repository overview and explorer work |
+| 9 | Architecture graph is interactive |
+| 10 | Execution tracing displays sample flows |
+| 11 | Circular dependency visualization works |
+| 12 | Repository update history is displayed |
+| 13 | Documentation editor and preview work |
+| 14 | AI assistant supports mock responses and citations |
+| 15 | Ollama and Gemini settings UI works |
+| 16 | Loading, empty, success, and error states exist |
+| 17 | Desktop, tablet, and mobile layouts work |
+| 18 | No TypeScript errors or production build failures |
+| 19 | Mock data and frontend services are properly separated |
+
+Do not declare Phase 1 complete unless these criteria have been tested.
+
+---
+
+# 15. DEVELOPMENT WORKFLOW — HOW YOU MUST WORK WITH ME
+
+I want a milestone-based development process.
+
+Follow this workflow strictly:
+
+### Step 1 — Understand
+Read the relevant requirements before writing code.
+
+### Step 2 — Plan
+Explain what you will implement in the current milestone.
+
+### Step 3 — Inspect
+If you have access to my project files, inspect the existing project before modifying anything.
+
+Do not overwrite existing working code without understanding it.
+
+### Step 4 — Implement
+Implement only the current approved milestone.
+
+### Step 5 — Explain
+Explain:
+- Files created.
+- Files modified.
+- Dependencies installed.
+- Configuration changes.
+- Important technical decisions.
+
+### Step 6 — Verify
+Run relevant checks:
+- Development server.
+- TypeScript validation.
+- Production build.
+- Tests where available.
+
+Never claim a command succeeded unless you actually executed it or I supplied its successful output.
+
+### Step 7 — Report
+Give me:
+- What is completed.
+- What is working.
+- What remains.
+- Any errors or limitations.
+- Exact next steps.
+
+### Step 8 — Wait for Approval
+Do not automatically move to the next milestone.
+
+Wait until I verify the current milestone and explicitly approve continuing.
+
+---
+
+# 16. IMPORTANT ENVIRONMENT CONSTRAINTS
+
+My development environment:
+
+- Operating system: Windows 11.
+- Editor: Visual Studio Code.
+- Project drive: D: drive.
+- Laptop: Dell Inspiron 15.
+- Processor: Intel Core i5-1235U.
+- RAM: 8 GB.
+- No dedicated NVIDIA GPU.
+
+Therefore:
+
+1. Provide Windows PowerShell commands.
+2. Avoid unnecessary heavyweight tools.
+3. Keep the development environment lightweight.
+4. Do not assume GPU acceleration.
+5. Avoid running large local AI models during frontend development.
+6. Prefer commands compatible with Windows.
+7. Explain any command that modifies project configuration.
+
+Do not move the project to another drive without asking.
+
+---
+
+# 17. COMMUNICATION RULES
+
+When explaining technical concepts:
+
+- Use simple, understandable English.
+- Use Tanglish when I ask for it.
+- Explain important technical decisions.
+- Do not assume I already know every tool.
+- Give exact commands.
+- Explain which directory to run commands from.
+- Tell me what output I should expect.
+- If an error occurs, diagnose it before suggesting random fixes.
+
+Do not overwhelm me with the entire project implementation in one response.
+
+Work milestone by milestone.
+
+Ask only essential clarification questions.
+
+If the requirements are already clear, proceed without asking me to repeat them.
+
+---
+
+# 18. FINAL INSTRUCTION — START DEVELOPMENT
+
+We have already finalized the RepoMind product concept, feature scope, page inventory, frontend technology stack, and development phases.
+
+Start with:
+
+**PHASE 1 — MILESTONE 1.1: PROJECT INITIALIZATION**
+
+Your first task is to:
+
+1. Initialize the React + TypeScript + Vite project.
+2. Install the required frontend dependencies.
+3. Configure the current stable Tailwind CSS setup.
+4. Initialize shadcn/ui correctly.
+5. Configure React Router.
+6. Create the initial folder structure.
+7. Verify the project runs successfully.
+8. Verify the production build.
+
+Use current official documentation for setup commands, especially for Tailwind CSS and shadcn/ui.
+
+Do not start building the dashboard or individual feature pages yet.
+
+Do not start backend development.
+
+Do not skip the verification step.
+
+After completing Milestone 1.1, report the results and wait for my approval before starting Milestone 1.2.
+
+**Your objective is not simply to generate code. Your objective is to help me build RepoMind as a maintainable, scalable, secure, and professional software product.**

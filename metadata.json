@@ -1,0 +1,6 @@
+{
+  "name": "RepoMind",
+  "description": "AI-powered repository intelligence platform. Understand any codebase, trace every connection, and explain every flow.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
