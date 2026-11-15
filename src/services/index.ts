@@ -10,6 +10,7 @@ import type {
   UpdatesService,
 } from './api/intelligence.service';
 import type { RepositoryService } from './api/repository.service';
+import { apiRepositoryService } from './api/repository.api';
 import { mockArchitectureService } from './mock/architecture.mock';
 import { mockAssistantService } from './mock/assistant.mock';
 import { mockAuthService } from './mock/auth.mock';
@@ -21,8 +22,8 @@ import { mockRepositoryService } from './mock/repository.mock';
 import { mockSettingsService } from './mock/settings.mock';
 import { mockUpdatesService } from './mock/updates.mock';
 
-// Service registry: Phase 2 replaces mock implementations here without modifying UI code.
-export const repositoryService: RepositoryService = mockRepositoryService;
+// Service registry: Real API repository service backed by Phase 3 backend endpoints
+export const repositoryService: RepositoryService = apiRepositoryService;
 export const explorerService: ExplorerService = mockExplorerService;
 export const architectureService: ArchitectureService = mockArchitectureService;
 export const executionService: ExecutionService = mockExecutionService;

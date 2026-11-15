@@ -1,11 +1,12 @@
 import uuid
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.github_connection import GitHubConnection
     from app.models.repository import Repository
     from app.models.token import RefreshToken
 
@@ -36,6 +37,12 @@ class User(Base, TimestampMixin):
     refresh_tokens: Mapped[List["RefreshToken"]] = relationship(
         "RefreshToken",
         back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    github_connection: Mapped[Optional["GitHubConnection"]] = relationship(
+        "GitHubConnection",
+        back_populates="user",
+        uselist=False,
         cascade="all, delete-orphan",
     )
 
