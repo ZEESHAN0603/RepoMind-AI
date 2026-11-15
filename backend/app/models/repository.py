@@ -1,12 +1,17 @@
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, Optional
-from sqlalchemy import DateTime, ForeignKey, String
+from typing import TYPE_CHECKING, List, Optional
+from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.ingestion_job import RepositoryIngestionJob
+    from app.models.repository_branch import RepositoryBranch
+    from app.models.repository_file import RepositoryFile
+    from app.models.repository_language import RepositoryLanguage
+    from app.models.repository_manifest import RepositoryDependencyManifest
     from app.models.user import User
 
 
@@ -35,6 +40,11 @@ class Repository(Base, TimestampMixin):
     current_commit_sha: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     visibility: Mapped[str] = mapped_column(String(20), default="public", nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="connected", nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    size_bytes: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    file_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    folder_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     last_analyzed_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -42,4 +52,29 @@ class Repository(Base, TimestampMixin):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="repositories")
+    branches: Mapped[List["RepositoryBranch"]] = relationship(
+        "RepositoryBranch",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    files: Mapped[List["RepositoryFile"]] = relationship(
+        "RepositoryFile",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    languages: Mapped[List["RepositoryLanguage"]] = relationship(
+        "RepositoryLanguage",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    manifests: Mapped[List["RepositoryDependencyManifest"]] = relationship(
+        "RepositoryDependencyManifest",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    ingestion_jobs: Mapped[List["RepositoryIngestionJob"]] = relationship(
+        "RepositoryIngestionJob",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
 

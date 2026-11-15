@@ -41,6 +41,33 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
 
+    # Workspace & Storage Configuration
+    STORAGE_DIR: str = "./storage"
+    MAX_UPLOAD_SIZE_BYTES: int = 52428800  # 50 MB
+    MAX_UNCOMPRESSED_SIZE_BYTES: int = 262144000  # 250 MB
+    MAX_EXTRACT_FILE_COUNT: int = 10000
+
+    # GitHub Integration
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+    GITHUB_TOKEN_ENCRYPTION_KEY: str = ""  # If empty, derived safely from JWT_SECRET
+
+    # File Discovery Exclusions
+    DEFAULT_IGNORE_DIRS: List[str] = [
+        ".git",
+        "node_modules",
+        ".venv",
+        "venv",
+        "__pycache__",
+        "dist",
+        "build",
+        ".next",
+        "coverage",
+        ".pytest_cache",
+        ".idea",
+        ".vscode",
+    ]
+
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:

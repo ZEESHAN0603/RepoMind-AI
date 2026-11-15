@@ -1,5 +1,6 @@
 from typing import List, Optional
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.repository import Repository
@@ -16,8 +17,34 @@ class RepositoryRepository:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
+    async def get_by_owner_and_url(self, owner_id: str, repository_url: str) -> Optional[Repository]:
+        query = select(Repository).where(
+            Repository.owner_id == owner_id,
+            Repository.repository_url == repository_url,
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def get_with_details(self, repo_id: str) -> Optional[Repository]:
+        query = (
+            select(Repository)
+            .options(
+                selectinload(Repository.branches),
+                selectinload(Repository.languages),
+                selectinload(Repository.manifests),
+                selectinload(Repository.ingestion_jobs),
+            )
+            .where(Repository.id == repo_id)
+        )
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
+
     async def list_by_owner(self, owner_id: str) -> List[Repository]:
-        query = select(Repository).where(Repository.owner_id == owner_id)
+        query = (
+            select(Repository)
+            .where(Repository.owner_id == owner_id)
+            .order_by(Repository.created_at.desc())
+        )
         result = await self.session.execute(query)
         return list(result.scalars().all())
 
@@ -27,7 +54,11 @@ class RepositoryRepository:
         await self.session.refresh(repo)
         return repo
 
+    async def update(self, repo: Repository) -> Repository:
+        await self.session.flush()
+        await self.session.refresh(repo)
+        return repo
+
     async def delete(self, repo: Repository) -> None:
         await self.session.delete(repo)
         await self.session.flush()
-
