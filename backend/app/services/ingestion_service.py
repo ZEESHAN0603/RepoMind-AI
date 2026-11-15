@@ -19,6 +19,7 @@ from app.repositories.repository_repository import RepositoryRepository
 from app.services.detection_service import TechnologyDetectionService
 from app.services.discovery_service import DiscoveryService
 from app.services.github_service import GitHubService
+from app.services.static_analysis_service import StaticAnalysisService
 from app.services.workspace_service import WorkspaceService
 from app.services.zip_service import ZipService
 
@@ -189,6 +190,15 @@ class IngestionService:
 
                 manifests = TechnologyDetectionService.detect_manifests(workspace_dir, repo.id)
                 await file_repo.replace_manifests(repo.id, manifests)
+
+                # Static code intelligence & symbol analysis
+                try:
+                    await job_repo.update_progress(job, "analyzing", "Extracting code symbols and static intelligence", 90)
+                    await session.commit()
+                    analysis_svc = StaticAnalysisService(self.workspace_service)
+                    await analysis_svc.analyze_repository(session, repo.id, user_id)
+                except Exception as analysis_err:
+                    logger.warning("Static analysis encountered warning on repo %s: %s", repo.id, analysis_err)
 
                 # Stage 5: Finalization & Success
                 repo.file_count = file_count

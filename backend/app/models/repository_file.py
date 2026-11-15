@@ -6,6 +6,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.api_route_endpoint import ApiRouteEndpoint
+    from app.models.code_import_export import CodeImportExport
+    from app.models.code_symbol import CodeSymbol
     from app.models.repository import Repository
 
 
@@ -36,6 +39,21 @@ class RepositoryFile(Base, TimestampMixin):
 
     # Relationship
     repository: Mapped["Repository"] = relationship("Repository", back_populates="files")
+    symbols: Mapped[list["CodeSymbol"]] = relationship(
+        "CodeSymbol",
+        back_populates="file",
+        cascade="all, delete-orphan",
+    )
+    imports_exports: Mapped[list["CodeImportExport"]] = relationship(
+        "CodeImportExport",
+        back_populates="file",
+        cascade="all, delete-orphan",
+    )
+    endpoints: Mapped[list["ApiRouteEndpoint"]] = relationship(
+        "ApiRouteEndpoint",
+        back_populates="file",
+        cascade="all, delete-orphan",
+    )
 
     __table_args__ = (
         Index("ix_repository_files_repo_path", "repository_id", "path"),
