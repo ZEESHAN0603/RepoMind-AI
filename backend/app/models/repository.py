@@ -7,6 +7,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.api_route_endpoint import ApiRouteEndpoint
+    from app.models.code_import_export import CodeImportExport
+    from app.models.code_symbol import CodeSymbol
     from app.models.ingestion_job import RepositoryIngestionJob
     from app.models.repository_branch import RepositoryBranch
     from app.models.repository_file import RepositoryFile
@@ -74,6 +77,21 @@ class Repository(Base, TimestampMixin):
     )
     ingestion_jobs: Mapped[List["RepositoryIngestionJob"]] = relationship(
         "RepositoryIngestionJob",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    symbols: Mapped[List["CodeSymbol"]] = relationship(
+        "CodeSymbol",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    imports_exports: Mapped[List["CodeImportExport"]] = relationship(
+        "CodeImportExport",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    endpoints: Mapped[List["ApiRouteEndpoint"]] = relationship(
+        "ApiRouteEndpoint",
         back_populates="repository",
         cascade="all, delete-orphan",
     )

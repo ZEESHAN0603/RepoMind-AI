@@ -1,6 +1,9 @@
 """Database models package."""
 
 from app.db.base import Base
+from app.models.api_route_endpoint import ApiRouteEndpoint
+from app.models.code_import_export import CodeImportExport
+from app.models.code_symbol import CodeSymbol
 from app.models.github_connection import GitHubConnection
 from app.models.ingestion_job import RepositoryIngestionJob
 from app.models.repository import Repository
@@ -22,4 +25,7 @@ __all__ = [
     "RepositoryDependencyManifest",
     "RepositoryIngestionJob",
     "GitHubConnection",
+    "CodeSymbol",
+    "CodeImportExport",
+    "ApiRouteEndpoint",
 ]

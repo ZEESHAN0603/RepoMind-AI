@@ -1,3 +1,4 @@
+from app.repositories.code_intelligence_repository import CodeIntelligenceRepository
 from app.repositories.file_repository import FileRepository
 from app.repositories.github_connection_repository import GitHubConnectionRepository
 from app.repositories.ingestion_job_repository import IngestionJobRepository
@@ -12,4 +13,5 @@ __all__ = [
     "IngestionJobRepository",
     "GitHubConnectionRepository",
     "FileRepository",
+    "CodeIntelligenceRepository",
 ]
