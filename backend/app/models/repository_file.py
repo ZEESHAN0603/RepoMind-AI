@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from app.models.api_route_endpoint import ApiRouteEndpoint
     from app.models.code_import_export import CodeImportExport
     from app.models.code_symbol import CodeSymbol
+    from app.models.code_chunk import CodeChunk
     from app.models.repository import Repository
 
 
@@ -51,6 +52,11 @@ class RepositoryFile(Base, TimestampMixin):
     )
     endpoints: Mapped[list["ApiRouteEndpoint"]] = relationship(
         "ApiRouteEndpoint",
+        back_populates="file",
+        cascade="all, delete-orphan",
+    )
+    chunks: Mapped[list["CodeChunk"]] = relationship(
+        "CodeChunk",
         back_populates="file",
         cascade="all, delete-orphan",
     )

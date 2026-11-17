@@ -10,12 +10,15 @@ if TYPE_CHECKING:
     from app.models.api_route_endpoint import ApiRouteEndpoint
     from app.models.code_import_export import CodeImportExport
     from app.models.code_symbol import CodeSymbol
+    from app.models.code_chunk import CodeChunk
+    from app.models.chat_conversation import ChatConversation
     from app.models.ingestion_job import RepositoryIngestionJob
     from app.models.repository_branch import RepositoryBranch
     from app.models.repository_file import RepositoryFile
     from app.models.repository_language import RepositoryLanguage
     from app.models.repository_manifest import RepositoryDependencyManifest
     from app.models.user import User
+    from app.models.architecture_snapshot import ArchitectureSnapshot
 
 
 class Repository(Base, TimestampMixin):
@@ -93,6 +96,22 @@ class Repository(Base, TimestampMixin):
     endpoints: Mapped[List["ApiRouteEndpoint"]] = relationship(
         "ApiRouteEndpoint",
         back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    chunks: Mapped[List["CodeChunk"]] = relationship(
+        "CodeChunk",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    conversations: Mapped[List["ChatConversation"]] = relationship(
+        "ChatConversation",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    architecture_snapshot: Mapped[Optional["ArchitectureSnapshot"]] = relationship(
+        "ArchitectureSnapshot",
+        back_populates="repository",
+        uselist=False,
         cascade="all, delete-orphan",
     )
 

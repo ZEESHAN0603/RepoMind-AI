@@ -200,6 +200,17 @@ class IngestionService:
                 except Exception as analysis_err:
                     logger.warning("Static analysis encountered warning on repo %s: %s", repo.id, analysis_err)
 
+                # Code chunking & vector embedding indexing (Phase 5)
+                try:
+                    await job_repo.update_progress(job, "analyzing", "Generating code embeddings and vector index", 95)
+                    await session.commit()
+                    from app.services.chunking_service import ChunkingService
+                    from app.services.embedding_service import EmbeddingService
+                    embed_svc = EmbeddingService(chunking_service=ChunkingService(self.workspace_service))
+                    await embed_svc.index_repository_embeddings(session, repo.id, user_id)
+                except Exception as embed_err:
+                    logger.warning("Embedding generation encountered warning on repo %s: %s", repo.id, embed_err)
+
                 # Stage 5: Finalization & Success
                 repo.file_count = file_count
                 repo.folder_count = folder_count

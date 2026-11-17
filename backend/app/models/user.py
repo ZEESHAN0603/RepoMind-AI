@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
+    from app.models.chat_conversation import ChatConversation
     from app.models.github_connection import GitHubConnection
     from app.models.repository import Repository
     from app.models.token import RefreshToken
@@ -43,6 +44,11 @@ class User(Base, TimestampMixin):
         "GitHubConnection",
         back_populates="user",
         uselist=False,
+        cascade="all, delete-orphan",
+    )
+    conversations: Mapped[List["ChatConversation"]] = relationship(
+        "ChatConversation",
+        back_populates="user",
         cascade="all, delete-orphan",
     )
 

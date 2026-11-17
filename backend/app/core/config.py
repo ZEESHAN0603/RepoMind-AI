@@ -68,6 +68,44 @@ class Settings(BaseSettings):
         ".vscode",
     ]
 
+    # AI & LLM Provider Configuration (Phase 5)
+    AI_PRIMARY_PROVIDER: str = "ollama"  # "ollama" | "gemini"
+    AI_FALLBACK_PROVIDER: str = "gemini"  # "gemini" | "none"
+
+    # Ollama Configuration (Local dev default: http://localhost:11434; Production on InstaBox)
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    PRODUCTION_OLLAMA_BASE_URL: str = ""
+    OLLAMA_CHAT_ENDPOINT: str = "/api/chat"
+    OLLAMA_EMBED_ENDPOINT: str = "/api/embed"
+    OLLAMA_PORT: int = 11434
+    OLLAMA_AUTH_REQUIRED: bool = False
+    OLLAMA_ACCESS_TOKEN: str = ""  # Private port token (e.g. ibp_...)
+    OLLAMA_API_KEY: str = ""       # Legacy or alternate bearer key
+    OLLAMA_GENERATION_MODEL: str = "qwen3.5:4b"
+    OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
+    OLLAMA_CONTEXT_WINDOW: int = 4096  # Bounded context window for CPU-constrained InstaBox
+    OLLAMA_TIMEOUT_SECONDS: float = 60.0
+    OLLAMA_CONNECT_TIMEOUT_SECONDS: float = 10.0
+    OLLAMA_MAX_RETRIES: int = 2
+
+    # Gemini Fallback Configuration (Free Tier Only)
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-1.5-flash"
+    GEMINI_ALLOW_CLOUD_FALLBACK: bool = True
+    GEMINI_TIMEOUT_SECONDS: float = 30.0
+
+    @property
+    def effective_ollama_base_url(self) -> str:
+        """Returns the appropriate Ollama base URL depending on deployment environment."""
+        if self.APP_ENV == "production" and self.PRODUCTION_OLLAMA_BASE_URL.strip():
+            return self.PRODUCTION_OLLAMA_BASE_URL.strip().rstrip("/")
+        return self.OLLAMA_BASE_URL.strip().rstrip("/")
+
+    @property
+    def effective_ollama_access_token(self) -> str:
+        """Returns the access token for InstaBox private port or reverse proxy."""
+        return (self.OLLAMA_ACCESS_TOKEN or self.OLLAMA_API_KEY).strip()
+
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:

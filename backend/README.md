@@ -21,6 +21,13 @@ Backend foundation for **RepoMind — AI-Powered Repository Intelligence Platfor
 backend/
 ├── app/
 │   ├── main.py                         # Application entrypoint & lifespan
+│   ├── ai/                             # AI & LLM Provider Abstraction (Phase 5)
+│   │   ├── base.py                     # BaseLLMProvider interface
+│   │   ├── ollama_provider.py          # InstaBox Ollama client (qwen3.5:4b, nomic-embed-text)
+│   │   ├── gemini_provider.py          # Gemini Free-Tier fallback client
+│   │   ├── provider_manager.py         # Dual-provider router & secret sanitizer
+│   │   ├── schemas.py                  # AI dataclasses (ChatMessage, GenerationResult, etc.)
+│   │   └── exceptions.py               # Categorized provider exceptions
 │   ├── core/
 │   │   ├── config.py                   # Centralized Pydantic Settings
 │   │   ├── security.py                 # Argon2 hashing & JWT lifecycle
