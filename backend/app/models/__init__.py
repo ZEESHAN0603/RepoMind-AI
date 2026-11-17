@@ -25,6 +25,7 @@ from app.models.repository_update_run import RepositoryUpdateRun
 from app.models.version_file_change import VersionFileChange
 from app.models.version_symbol_change import VersionSymbolChange
 from app.models.version_impact_record import VersionImpactRecord
+from app.models.repository_document import RepositoryDocument, RepositoryDocumentVersion
 from app.models.token import RefreshToken
 from app.models.user import User
 
@@ -56,4 +57,6 @@ __all__ = [
     "VersionFileChange",
     "VersionSymbolChange",
     "VersionImpactRecord",
+    "RepositoryDocument",
+    "RepositoryDocumentVersion",
 ]

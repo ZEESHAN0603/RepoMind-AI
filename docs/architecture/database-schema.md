@@ -38,6 +38,8 @@ erDiagram
     repository_update_runs ||--o{ version_file_changes : contains
     repository_update_runs ||--o{ version_symbol_changes : contains
     repository_update_runs ||--o{ version_impact_records : tracks
+    repositories ||--o{ repository_documents : has
+    repository_documents ||--o{ repository_document_versions : tracks
     chat_conversations ||--o{ chat_messages : records
 ```
 
@@ -190,3 +192,26 @@ erDiagram
 - `evidence_reason` (TEXT): Graph traversal reason justifying blast radius placement.
 - `source_change_symbol_id` (VARCHAR(36), FK -> version_symbol_changes.id, Nullable).
 - `depth` (INTEGER): Traversal hop distance from directly changed node.
+
+### `repository_documents` *(New in Phase 10)*
+- `id` (VARCHAR(36), PK): UUID.
+- `repository_id` (VARCHAR(36), FK -> repositories.id ON DELETE CASCADE).
+- `doc_type` (VARCHAR(50)): `readme`, `architecture`, `api`, `execution_flow`, `dependencies`, `update_changelog`, `code_reference`.
+- `title` (VARCHAR(255)), `description` (TEXT), `content` (TEXT).
+- `status` (VARCHAR(30)): `draft`, `approved`, `stale`, `generating`, `failed`.
+- `confidence` (VARCHAR(20)): `verified`, `inferred`.
+- `source_evidence_json` (TEXT): Sourced file/line citation map.
+- `version_number` (INTEGER, Default 1).
+- `last_generated_at` (TIMESTAMP WITH TIME ZONE).
+- `approved_at` (TIMESTAMP WITH TIME ZONE, Nullable), `approved_by` (VARCHAR(36), FK -> users.id, Nullable).
+
+### `repository_document_versions` *(New in Phase 10)*
+- `id` (VARCHAR(36), PK): UUID.
+- `document_id` (VARCHAR(36), FK -> repository_documents.id ON DELETE CASCADE).
+- `repository_id` (VARCHAR(36), FK -> repositories.id ON DELETE CASCADE).
+- `version_number` (INTEGER).
+- `content` (TEXT): Historical Markdown snapshot.
+- `change_summary` (VARCHAR(500), Nullable).
+- `created_by` (VARCHAR(36), FK -> users.id, Nullable).
+- `created_at` (TIMESTAMP WITH TIME ZONE).
+

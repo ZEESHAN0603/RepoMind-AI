@@ -6,6 +6,7 @@ from app.api.v1.endpoints import (
     chat,
     code_intelligence,
     dependencies,
+    documentation,
     execution,
     github,
     health,
@@ -27,4 +28,5 @@ api_v1_router.include_router(architecture.router, prefix="/repositories", tags=[
 api_v1_router.include_router(execution.router, prefix="/repositories", tags=["Execution Flow Tracing"])
 api_v1_router.include_router(dependencies.router, prefix="/repositories", tags=["Dependency Analysis & Intelligence"])
 api_v1_router.include_router(updates.router, prefix="/repositories", tags=["Repository Update Intelligence"])
+api_v1_router.include_router(documentation.router, prefix="/repositories", tags=["Automatic Documentation Generation"])
 api_v1_router.include_router(chat.router, prefix="/repositories", tags=["Repository Assistant & Chat"])
