@@ -2,6 +2,7 @@
 
 from app.db.base import Base
 from app.models.api_route_endpoint import ApiRouteEndpoint
+from app.models.architecture_snapshot import ArchitectureSnapshot
 from app.models.code_import_export import CodeImportExport
 from app.models.code_symbol import CodeSymbol
 from app.models.code_chunk import CodeChunk
@@ -34,4 +35,5 @@ __all__ = [
     "ChatMessage",
     "CodeImportExport",
     "ApiRouteEndpoint",
+    "ArchitectureSnapshot",
 ]

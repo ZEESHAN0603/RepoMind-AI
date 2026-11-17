@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, chat, code_intelligence, github, health, repositories, users
+from app.api.v1.endpoints import architecture, auth, chat, code_intelligence, github, health, repositories, users
 
 api_v1_router = APIRouter()
 
@@ -11,4 +11,5 @@ api_v1_router.include_router(github.router, prefix="/auth/github", tags=["GitHub
 api_v1_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_v1_router.include_router(repositories.router, prefix="/repositories", tags=["Repositories"])
 api_v1_router.include_router(code_intelligence.router, prefix="/repositories", tags=["Code Intelligence"])
+api_v1_router.include_router(architecture.router, prefix="/repositories", tags=["Architecture Intelligence"])
 api_v1_router.include_router(chat.router, prefix="/repositories", tags=["Repository Assistant & Chat"])

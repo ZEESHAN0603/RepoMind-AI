@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from app.models.repository_language import RepositoryLanguage
     from app.models.repository_manifest import RepositoryDependencyManifest
     from app.models.user import User
+    from app.models.architecture_snapshot import ArchitectureSnapshot
 
 
 class Repository(Base, TimestampMixin):
@@ -105,6 +106,12 @@ class Repository(Base, TimestampMixin):
     conversations: Mapped[List["ChatConversation"]] = relationship(
         "ChatConversation",
         back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    architecture_snapshot: Mapped[Optional["ArchitectureSnapshot"]] = relationship(
+        "ArchitectureSnapshot",
+        back_populates="repository",
+        uselist=False,
         cascade="all, delete-orphan",
     )
 
