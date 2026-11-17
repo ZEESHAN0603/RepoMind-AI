@@ -240,7 +240,7 @@ function DependenciesWorkspace() {
     if (!data) return { nodes: [] as DepRFNode[], edges: [] as Edge[] };
 
     const activeModuleNames = new Set(
-      filteredRelationships.flatMap((r) => [r.sourceModule, r.targetModule])
+      filteredRelationships.flatMap((r) => [r.sourceModule, r.targetModule, r.sourcePath, r.targetPath].filter(Boolean))
     );
 
     const visibleModuleNodes = data.nodes.filter((n) => {
@@ -257,8 +257,14 @@ function DependenciesWorkspace() {
     const dependents = new Set<string>();
     if (selectedNodeId) {
       for (const rel of filteredRelationships) {
-        if (rel.sourceModule === selectedNodeId) directDeps.add(rel.targetModule);
-        if (rel.targetModule === selectedNodeId) dependents.add(rel.sourceModule);
+        if (rel.sourceModule === selectedNodeId || rel.sourcePath === selectedNodeId) {
+          directDeps.add(rel.targetModule);
+          if (rel.targetPath) directDeps.add(rel.targetPath);
+        }
+        if (rel.targetModule === selectedNodeId || rel.targetPath === selectedNodeId) {
+          dependents.add(rel.sourceModule);
+          if (rel.sourcePath) dependents.add(rel.sourcePath);
+        }
       }
     }
 
@@ -294,18 +300,24 @@ function DependenciesWorkspace() {
     const visibleIds = new Set(rfNodes.map((n) => n.id));
 
     const rfEdges: Edge[] = filteredRelationships
-      .filter((rel) => visibleIds.has(rel.sourceModule) && visibleIds.has(rel.targetModule))
+      .filter((rel) => {
+        const src = visibleIds.has(rel.sourceModule) ? rel.sourceModule : (visibleIds.has(rel.sourcePath) ? rel.sourcePath : null);
+        const tgt = visibleIds.has(rel.targetModule) ? rel.targetModule : (visibleIds.has(rel.targetPath) ? rel.targetPath : null);
+        return Boolean(src && tgt);
+      })
       .map((rel) => {
+        const src = (visibleIds.has(rel.sourceModule) ? rel.sourceModule : rel.sourcePath) as string;
+        const tgt = (visibleIds.has(rel.targetModule) ? rel.targetModule : rel.targetPath) as string;
         const isCycleRel = rel.category === 'circular';
         const isPartOfSelectedCycle =
           selectedCycle !== null &&
-          selectedCycleNodeSet.has(rel.sourceModule) &&
-          selectedCycleNodeSet.has(rel.targetModule) &&
+          (selectedCycleNodeSet.has(src) || selectedCycleNodeSet.has(rel.sourceModule)) &&
+          (selectedCycleNodeSet.has(tgt) || selectedCycleNodeSet.has(rel.targetModule)) &&
           isCycleRel;
 
         const isNodeConnected =
           selectedNodeId !== null &&
-          (rel.sourceModule === selectedNodeId || rel.targetModule === selectedNodeId);
+          (src === selectedNodeId || tgt === selectedNodeId || rel.sourceModule === selectedNodeId || rel.targetModule === selectedNodeId);
 
         let isDimmed = false;
         if (selectedCycle) {
@@ -317,14 +329,14 @@ function DependenciesWorkspace() {
         const strokeColor =
           isCycleRel || isPartOfSelectedCycle
             ? '#ef4444'
-            : rel.targetModule === selectedNodeId
+            : tgt === selectedNodeId || rel.targetModule === selectedNodeId
               ? '#0ea5e9'
               : '#6366f1';
 
         return {
           id: rel.id,
-          source: rel.sourceModule,
-          target: rel.targetModule,
+          source: src,
+          target: tgt,
           label: rel.importSpecifiers[0] ?? rel.category,
           animated: isPartOfSelectedCycle || isCycleRel || isNodeConnected,
           markerEnd: {

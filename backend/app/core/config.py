@@ -26,11 +26,18 @@ class Settings(BaseSettings):
     ]
 
     # Database Configuration
-    # Uses asyncpg for PostgreSQL, or aiosqlite for standalone local fallback & testing
+    # Uses asyncpg for PostgreSQL (including Supabase), or aiosqlite for local testing
     DATABASE_URL: str = "sqlite+aiosqlite:///./repomind.db"
     DB_ECHO: bool = False
     DB_POOL_SIZE: int = 5
     DB_MAX_OVERFLOW: int = 10
+    DB_POOL_TIMEOUT: int = 30
+    DB_POOL_RECYCLE: int = 1800
+
+    # Supabase Specific Configuration (Phase 8)
+    SUPABASE_URL: str = ""
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
 
     # Security & Authentication (JWT)
     JWT_SECRET: str = "repomind-super-secret-development-key-change-in-production-min-32-chars"
@@ -93,6 +100,20 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-1.5-flash"
     GEMINI_ALLOW_CLOUD_FALLBACK: bool = True
     GEMINI_TIMEOUT_SECONDS: float = 30.0
+
+    @property
+    def effective_database_url(self) -> str:
+        """
+        Returns a normalized database URL compatible with SQLAlchemy 2.0 Async (asyncpg).
+        Normalizes 'postgres://' or 'postgresql://' prefixes to 'postgresql+asyncpg://'.
+        Preserves SQLite URLs and already-specified async driver schemes.
+        """
+        url = (self.DATABASE_URL or "").strip()
+        if url.startswith("postgresql://"):
+            return "postgresql+asyncpg://" + url[len("postgresql://"):]
+        elif url.startswith("postgres://"):
+            return "postgresql+asyncpg://" + url[len("postgres://"):]
+        return url
 
     @property
     def effective_ollama_base_url(self) -> str:

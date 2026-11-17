@@ -20,6 +20,8 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.architecture_snapshot import ArchitectureSnapshot
     from app.models.code_call import CodeCall
+    from app.models.code_dependency import CodeDependency
+    from app.models.dependency_snapshot import DependencySnapshot
     from app.models.execution_entry_point import ExecutionEntryPoint
     from app.models.execution_snapshot import ExecutionSnapshot
 
@@ -131,6 +133,17 @@ class Repository(Base, TimestampMixin):
         "ExecutionSnapshot",
         back_populates="repository",
         uselist=False,
+        cascade="all, delete-orphan",
+    )
+    dependency_snapshot: Mapped[Optional["DependencySnapshot"]] = relationship(
+        "DependencySnapshot",
+        back_populates="repository",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    dependencies: Mapped[List["CodeDependency"]] = relationship(
+        "CodeDependency",
+        back_populates="repository",
         cascade="all, delete-orphan",
     )
 

@@ -1,5 +1,12 @@
 import asyncio
+import os
+import sys
 from logging.config import fileConfig
+
+# Ensure backend root directory is in python sys.path
+backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -19,8 +26,8 @@ if config.config_file_name is not None:
 # Model metadata for autogenerate support
 target_metadata = Base.metadata
 
-# Inject database URL from Pydantic settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Inject database URL from Pydantic settings (normalized for asyncpg)
+config.set_main_option("sqlalchemy.url", settings.effective_database_url)
 
 
 def run_migrations_offline() -> None:

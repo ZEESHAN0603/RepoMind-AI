@@ -19,8 +19,8 @@ RepoMind distributes its workloads across specialized environments to maintain l
        │ (HTTPS)    │ (HTTPS + Token Auth)
        ▼            ▼
 ┌──────────────┐  ┌──────────────────────────────────────────────────┐
-│  PostgreSQL  │  │   InstaBox (Ollama Dedicated Model Server)       │
-│  Managed DB  │  │   https://11434-agq6j3olyzqnjz6i3vl5zgyvj4...    │
+│   Supabase   │  │   InstaBox (Ollama Dedicated Model Server)       │
+│  PostgreSQL  │  │   https://11434-agq6j3olyzqnjz6i3vl5zgyvj4...    │
 └──────────────┘  │   - qwen3.5:4b (Chat Inference)                  │
                   │   - nomic-embed-text (Embeddings)                │
                   │   - Private Port Auth: Authorization: Bearer     │
@@ -41,7 +41,7 @@ RepoMind distributes its workloads across specialized environments to maintain l
 | **Backend API** | Render | Web Service (Python 3.11, Uvicorn) | TLS 1.3, holds all JWT & AI secrets |
 | **Primary AI Server** | InstaBox | Cloud Linux VM (4 vCPU, 8 GB RAM) | HTTPS over port 11434 with private port token |
 | **Fallback AI** | Google Cloud | Gemini Free Tier REST API | HTTPS with backend `GEMINI_API_KEY` |
-| **Relational Database** | Managed PostgreSQL | PostgreSQL 15+ / Render Postgres | SSL/TLS connection pooling |
+| **Relational Database** | Supabase | Managed PostgreSQL 15+ (Direct / Session Mode on 5432) | TLS 1.3, SSL connection pooling, statement caching disabled on transaction pooler |
 
 ## 3. InstaBox Private Port Configuration
 

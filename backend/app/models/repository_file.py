@@ -7,6 +7,7 @@ from app.db.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.api_route_endpoint import ApiRouteEndpoint
+    from app.models.code_dependency import CodeDependency
     from app.models.code_import_export import CodeImportExport
     from app.models.code_symbol import CodeSymbol
     from app.models.code_chunk import CodeChunk
@@ -59,6 +60,17 @@ class RepositoryFile(Base, TimestampMixin):
         "CodeChunk",
         back_populates="file",
         cascade="all, delete-orphan",
+    )
+    outgoing_dependencies: Mapped[list["CodeDependency"]] = relationship(
+        "CodeDependency",
+        foreign_keys="CodeDependency.source_file_id",
+        back_populates="source_file",
+        cascade="all, delete-orphan",
+    )
+    incoming_dependencies: Mapped[list["CodeDependency"]] = relationship(
+        "CodeDependency",
+        foreign_keys="CodeDependency.target_file_id",
+        back_populates="target_file",
     )
 
     __table_args__ = (
