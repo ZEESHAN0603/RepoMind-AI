@@ -92,6 +92,11 @@ class ParserRegistry:
         return parser
 
     @classmethod
+    def get_parser_for_file(cls, file_path: str) -> BaseCodeParser:
+        """Convenience method to retrieve parser for a file path."""
+        return cls.get_parser(file_path=file_path)
+
+    @classmethod
     def is_language_supported(cls, language: str) -> bool:
         if language.lower() == "python":
             return True

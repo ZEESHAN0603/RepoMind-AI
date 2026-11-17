@@ -8,6 +8,7 @@ from app.core.exceptions import (
     BadRequestException,
     ForbiddenException,
     NotFoundException,
+    UnauthorizedException,
 )
 from app.core.logging import logger
 
@@ -247,4 +248,145 @@ class GitHubService:
             if res.status_code != 200:
                 raise UnauthorizedException("Invalid or revoked GitHub access token")
             return res.json()
+
+    @classmethod
+    async def list_recent_commits(
+        cls,
+        owner: str,
+        repo: str,
+        branch: Optional[str] = None,
+        limit: int = 20,
+        access_token: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Lists recent commits for a repository/branch via GitHub REST API."""
+        url = f"{cls.GITHUB_API_BASE}/repos/{owner}/{repo}/commits"
+        params: Dict[str, Any] = {"per_page": min(limit, 100)}
+        if branch:
+            params["sha"] = branch
+        headers = cls._get_headers(access_token)
+
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                res = await client.get(url, headers=headers, params=params)
+                if res.status_code == 200:
+                    commits_data = res.json()
+                    results = []
+                    for c in commits_data:
+                        commit_obj = c.get("commit", {})
+                        author_obj = commit_obj.get("author", {})
+                        results.append({
+                            "sha": c.get("sha"),
+                            "short_sha": c.get("sha", "")[:7],
+                            "message": commit_obj.get("message", "").strip(),
+                            "author_name": author_obj.get("name"),
+                            "author_email": author_obj.get("email"),
+                            "author_date": author_obj.get("date"),
+                            "html_url": c.get("html_url"),
+                        })
+                    return results
+                elif res.status_code == 404:
+                    raise NotFoundException(f"Repository {owner}/{repo} or branch not found on GitHub")
+                elif res.status_code in (401, 403):
+                    raise ForbiddenException("Unauthorized to access repository commits")
+        except Exception as e:
+            if isinstance(e, (NotFoundException, ForbiddenException)):
+                raise
+            logger.warning("Failed to list GitHub commits: %s", e)
+        return []
+
+    @classmethod
+    async def get_commit_details(
+        cls,
+        owner: str,
+        repo: str,
+        commit_sha: str,
+        access_token: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Retrieves detailed information and changed files for a specific commit."""
+        url = f"{cls.GITHUB_API_BASE}/repos/{owner}/{repo}/commits/{commit_sha}"
+        headers = cls._get_headers(access_token)
+
+        try:
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                res = await client.get(url, headers=headers)
+                if res.status_code == 200:
+                    data = res.json()
+                    commit_obj = data.get("commit", {})
+                    author_obj = commit_obj.get("author", {})
+                    stats = data.get("stats", {})
+                    files = []
+                    for f in data.get("files", []):
+                        files.append({
+                            "filename": f.get("filename"),
+                            "previous_filename": f.get("previous_filename"),
+                            "status": f.get("status"),  # added, modified, removed, renamed
+                            "additions": f.get("additions", 0),
+                            "deletions": f.get("deletions", 0),
+                            "changes": f.get("changes", 0),
+                            "patch": f.get("patch"),
+                        })
+                    return {
+                        "sha": data.get("sha"),
+                        "short_sha": data.get("sha", "")[:7],
+                        "message": commit_obj.get("message", "").strip(),
+                        "author_name": author_obj.get("name"),
+                        "author_email": author_obj.get("email"),
+                        "commit_timestamp": author_obj.get("date"),
+                        "total_additions": stats.get("additions", 0),
+                        "total_deletions": stats.get("deletions", 0),
+                        "total_files": len(files),
+                        "files": files,
+                    }
+                elif res.status_code == 404:
+                    raise NotFoundException(f"Commit {commit_sha} not found in {owner}/{repo}")
+        except Exception as e:
+            if isinstance(e, NotFoundException):
+                raise
+            logger.warning("Failed to get GitHub commit details: %s", e)
+        return {}
+
+    @classmethod
+    async def compare_commits(
+        cls,
+        owner: str,
+        repo: str,
+        base_sha: str,
+        target_sha: str,
+        access_token: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Compares two commits or branches using GitHub Compare API."""
+        url = f"{cls.GITHUB_API_BASE}/repos/{owner}/{repo}/compare/{base_sha}...{target_sha}"
+        headers = cls._get_headers(access_token)
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                res = await client.get(url, headers=headers)
+                if res.status_code == 200:
+                    data = res.json()
+                    files = []
+                    for f in data.get("files", []):
+                        files.append({
+                            "filename": f.get("filename"),
+                            "previous_filename": f.get("previous_filename"),
+                            "status": f.get("status"),  # added, modified, removed, renamed
+                            "additions": f.get("additions", 0),
+                            "deletions": f.get("deletions", 0),
+                            "changes": f.get("changes", 0),
+                            "patch": f.get("patch"),
+                        })
+                    return {
+                        "status": data.get("status"),  # ahead, behind, identical, diverged
+                        "ahead_by": data.get("ahead_by", 0),
+                        "behind_by": data.get("behind_by", 0),
+                        "total_commits": data.get("total_commits", 0),
+                        "files": files,
+                    }
+                elif res.status_code == 404:
+                    raise NotFoundException(f"Comparison {base_sha}...{target_sha} not found in {owner}/{repo}")
+        except Exception as e:
+            if isinstance(e, NotFoundException):
+                raise
+            logger.warning("Failed to compare GitHub commits: %s", e)
+        return {"status": "unknown", "ahead_by": 0, "behind_by": 0, "total_commits": 0, "files": []}
+
 

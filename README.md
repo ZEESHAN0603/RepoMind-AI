@@ -23,7 +23,16 @@ This codebase is structured cleanly by feature and service abstraction across ba
 - **Styling & UI**: Tailwind CSS v4, shadcn/ui, Lucide React
 - **Routing**: React Router
 - **State & Data**: Zustand, TanStack Query
-- **Code & Visualization**: `@xyflow/react`, `@monaco-editor/react`, `react-markdown`, `mermaid`
+- **Code & Visualization**: `@xyflow/react`, `@monaco-editor/react`, `react-markdown`, `mermaid`, `cytoscape`
+- **Backend & Intelligence**: FastAPI, SQLAlchemy 2.0 Async, Supabase PostgreSQL, Tree-sitter, AST Diffing, Ollama (InstaBox/Local), Gemini free tier fallback
+
+## Features
+- **Phase 1–4**: Ingestion, AST Parsing, Symbol Extraction, File Tree.
+- **Phase 5**: Vector Embeddings (nomic-embed-text), RAG Search, Chat Assistant.
+- **Phase 6**: Multi-View Interactive Architecture Intelligence.
+- **Phase 7**: Execution Flow Tracing & Static Call Resolution.
+- **Phase 8**: Multi-Module Dependency Analysis & Circular Cycle Detection.
+- **Phase 9**: Repository Update Intelligence (AST Diffing, Line-Shift Invariance, Blast Radius Analysis, Grounded AI Summaries).
 
 ## Local Development (Windows PowerShell)
 

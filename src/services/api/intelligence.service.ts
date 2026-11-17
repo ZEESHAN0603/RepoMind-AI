@@ -47,6 +47,9 @@ export interface DependencyService {
 export interface UpdatesService {
   getRepositoryUpdates(repositoryId: string): Promise<RepositoryUpdatesData>;
   triggerIncrementalReindex(repositoryId: string): Promise<RepositoryUpdatesData>;
+  getUpdateRunDetail?(repositoryId: string, runId: string): Promise<any>;
+  generateExplanation?(repositoryId: string, runId: string, focus?: string): Promise<string>;
+  compareVersions?(repositoryId: string, baseSha?: string, targetSha?: string): Promise<any>;
 }
 
 export interface DocumentationService {

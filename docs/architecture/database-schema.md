@@ -33,6 +33,11 @@ erDiagram
     repositories ||--o| execution_snapshots : caches
     repositories ||--o| dependency_snapshots : caches
     repositories ||--o{ code_dependencies : tracks
+    repositories ||--o{ repository_versions : records
+    repositories ||--o{ repository_update_runs : executes
+    repository_update_runs ||--o{ version_file_changes : contains
+    repository_update_runs ||--o{ version_symbol_changes : contains
+    repository_update_runs ||--o{ version_impact_records : tracks
     chat_conversations ||--o{ chat_messages : records
 ```
 
@@ -131,3 +136,57 @@ erDiagram
 - `line_number` (INTEGER).
 - `is_circular` (BOOLEAN).
 - `confidence` (VARCHAR(20)): `verified`, `inferred`.
+
+### `repository_versions` *(New in Phase 9)*
+- `id` (VARCHAR(36), PK): UUID.
+- `repository_id` (VARCHAR(36), FK -> repositories.id ON DELETE CASCADE).
+- `version_tag` (VARCHAR(100)): Tag or human-readable identifier (e.g. `commit:9a4f21c` or `snapshot:v1`).
+- `commit_sha` (VARCHAR(64), Nullable): 40-character Git commit hash (NULL for ZIP snapshots).
+- `commit_message` (TEXT, Nullable).
+- `author_name` (VARCHAR(150)), `author_email` (VARCHAR(255)).
+- `commit_timestamp` (TIMESTAMP WITH TIME ZONE, Nullable).
+- `source_type` (VARCHAR(50)): `github_commit`, `zip_snapshot`.
+
+### `repository_update_runs` *(New in Phase 9)*
+- `id` (VARCHAR(36), PK): UUID.
+- `repository_id` (VARCHAR(36), FK -> repositories.id ON DELETE CASCADE).
+- `base_version_id` (VARCHAR(36), FK -> repository_versions.id, Nullable).
+- `target_version_id` (VARCHAR(36), FK -> repository_versions.id ON DELETE CASCADE).
+- `base_commit_sha` (VARCHAR(64), Nullable), `target_commit_sha` (VARCHAR(64), Nullable).
+- `status` (VARCHAR(30)): `queued`, `analyzing`, `completed`, `failed`.
+- `total_files_changed`, `total_symbols_changed`, `total_additions`, `total_deletions` (INTEGER).
+- `impact_summary_json` (TEXT): JSON metrics of blast radius classifications.
+- `ai_summary_markdown` (TEXT, Nullable): Grounded AI change explanation.
+- `ai_summary_status` (VARCHAR(30)): `pending`, `generating`, `completed`, `failed`.
+- `analyzed_at` (TIMESTAMP WITH TIME ZONE).
+
+### `version_file_changes` *(New in Phase 9)*
+- `id` (VARCHAR(36), PK): UUID.
+- `update_run_id` (VARCHAR(36), FK -> repository_update_runs.id ON DELETE CASCADE).
+- `path` (VARCHAR(1000)), `old_path` (VARCHAR(1000), Nullable).
+- `change_type` (VARCHAR(20)): `added`, `modified`, `deleted`, `renamed`.
+- `file_category` (VARCHAR(30)): `source`, `config`, `manifest`, `documentation`, `other`.
+- `additions`, `deletions` (INTEGER).
+- `old_size_bytes`, `new_size_bytes` (BIGINT).
+- `old_content_hash`, `new_content_hash` (VARCHAR(64)).
+- `diff_patch` (TEXT): Unified diff patch string (bounded to 200 KB).
+- `summary` (TEXT).
+
+### `version_symbol_changes` *(New in Phase 9)*
+- `id` (VARCHAR(36), PK): UUID.
+- `update_run_id` (VARCHAR(36), FK -> repository_update_runs.id ON DELETE CASCADE).
+- `file_change_id` (VARCHAR(36), FK -> version_file_changes.id ON DELETE CASCADE, Nullable).
+- `symbol_name` (VARCHAR(255)), `symbol_type` (VARCHAR(50)), `scope` (VARCHAR(255), Nullable).
+- `change_type` (VARCHAR(20)): `added`, `modified`, `deleted`, `renamed`.
+- `old_signature` (TEXT, Nullable), `new_signature` (TEXT, Nullable).
+- `evidence_json` (TEXT): Structured diff rationale and parameter/body changes.
+
+### `version_impact_records` *(New in Phase 9)*
+- `id` (VARCHAR(36), PK): UUID.
+- `update_run_id` (VARCHAR(36), FK -> repository_update_runs.id ON DELETE CASCADE).
+- `affected_type` (VARCHAR(50)): `file`, `symbol`, `caller`, `endpoint`, `architecture_component`.
+- `affected_identifier` (VARCHAR(500)), `affected_path` (VARCHAR(1000)).
+- `impact_level` (VARCHAR(30)): `directly_changed`, `directly_affected`, `indirectly_affected`, `potentially_affected`, `unknown`.
+- `evidence_reason` (TEXT): Graph traversal reason justifying blast radius placement.
+- `source_change_symbol_id` (VARCHAR(36), FK -> version_symbol_changes.id, Nullable).
+- `depth` (INTEGER): Traversal hop distance from directly changed node.

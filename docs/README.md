@@ -19,3 +19,5 @@ Welcome to the comprehensive documentation suite for **RepoMind — AI-Powered R
 - [Phase 5: AI Integration & RAG](phases/phase-05-ai-rag.md)
 - [Phase 6: Architecture Intelligence](phases/phase-06-architecture-intelligence.md)
 - [Phase 7: Execution Flow Tracing](phases/phase-07-execution-flow-tracing.md)
+- [Phase 8: Dependency Analysis](phases/phase-08-dependency-analysis.md)
+- [Phase 9: Repository Update Intelligence](phases/phase-09-repository-update-intelligence.md)
