@@ -4,6 +4,8 @@ from app.db.base import Base
 from app.models.api_route_endpoint import ApiRouteEndpoint
 from app.models.architecture_snapshot import ArchitectureSnapshot
 from app.models.code_call import CodeCall
+from app.models.code_dependency import CodeDependency
+from app.models.dependency_snapshot import DependencySnapshot
 from app.models.execution_entry_point import ExecutionEntryPoint
 from app.models.execution_snapshot import ExecutionSnapshot
 from app.models.code_import_export import CodeImportExport
@@ -42,4 +44,6 @@ __all__ = [
     "CodeCall",
     "ExecutionEntryPoint",
     "ExecutionSnapshot",
+    "DependencySnapshot",
+    "CodeDependency",
 ]

@@ -17,17 +17,21 @@ engine_kwargs = {
     "future": True,
 }
 
-if "sqlite" in settings.DATABASE_URL:
+db_url = settings.effective_database_url
+
+if "sqlite" in db_url:
     # SQLite requires check_same_thread=False
     engine_kwargs["connect_args"] = {"check_same_thread": False}
     engine_kwargs["poolclass"] = NullPool
 else:
-    # PostgreSQL connection pooling
+    # PostgreSQL / Supabase connection pooling
     engine_kwargs["pool_size"] = settings.DB_POOL_SIZE
     engine_kwargs["max_overflow"] = settings.DB_MAX_OVERFLOW
     engine_kwargs["pool_pre_ping"] = True
+    engine_kwargs["pool_recycle"] = settings.DB_POOL_RECYCLE
+    engine_kwargs["pool_timeout"] = settings.DB_POOL_TIMEOUT
 
-engine: AsyncEngine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
+engine: AsyncEngine = create_async_engine(db_url, **engine_kwargs)
 
 async_session_maker = async_sessionmaker(
     bind=engine,
