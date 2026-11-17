@@ -1,8 +1,18 @@
 # RepoMind — Database Schema
 
-## 1. Schema Overview
+## 1. Schema & Database Architecture Overview
 
-RepoMind employs a normalized relational database schema managed via **SQLAlchemy 2.0 (Async)** and **Alembic**.
+RepoMind employs a normalized relational database schema managed via **SQLAlchemy 2.0 (Async)** and **Alembic**, backed exclusively by **Supabase-managed PostgreSQL** as the sole primary application database provider.
+
+### Supabase Connection Topology
+- **Primary Relational Engine**: Supabase-managed PostgreSQL 15+.
+- **Session Mode (Direct on Port 5432 - Recommended for Render)**:
+  `postgresql+asyncpg://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?ssl=require`
+- **Transaction Pooler (Supavisor on Port 6543)**:
+  `postgresql+asyncpg://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?ssl=require`
+  *(Statement caching disabled via `statement_cache_size=0` for transaction-pooled connections)*
+- **Driver**: `asyncpg` with automated TLS 1.3 encryption and connection pre-ping (`pool_pre_ping=True`).
+- **Isolation & Security**: Privileged database access is restricted entirely to the FastAPI backend hosted on Render. The React frontend on Vercel never accesses the database directly or holds service-role credentials.
 
 ```mermaid
 erDiagram

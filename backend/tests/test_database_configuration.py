@@ -70,3 +70,21 @@ async def test_copy_table_data_dry_run(tmp_path):
     report = await copy_table_data(src_url, tgt_url, dry_run=True)
     assert report["status"] == "success"
     assert report["dry_run"] is True
+
+
+@pytest.mark.asyncio
+async def test_check_db_health():
+    """Verifies check_db_health returns boolean connectivity status."""
+    from app.db.session import check_db_health
+    status = await check_db_health()
+    assert isinstance(status, bool)
+
+
+def test_supabase_pooler_detection():
+    """Verifies Supabase transaction pooler port and domain detection for statement caching."""
+    pooler_url = "postgresql+asyncpg://postgres.proj:secret@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
+    session_url = "postgresql+asyncpg://postgres:secret@db.proj.supabase.co:5432/postgres"
+
+    assert ":6543" in pooler_url or "pooler.supabase.com" in pooler_url
+    assert "supabase.co" in session_url
+

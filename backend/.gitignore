@@ -52,3 +52,9 @@ htmlcov/
 *.log
 logs/
 
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+repomind.db
+

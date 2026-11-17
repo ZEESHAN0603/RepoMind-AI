@@ -25,16 +25,16 @@ class Settings(BaseSettings):
         "http://localhost:3000",
     ]
 
-    # Database Configuration
-    # Uses asyncpg for PostgreSQL (including Supabase), or aiosqlite for local testing
-    DATABASE_URL: str = "sqlite+aiosqlite:///./repomind.db"
+    # Database Configuration (Supabase Managed PostgreSQL)
+    # Uses asyncpg for Supabase PostgreSQL
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
     DB_ECHO: bool = False
     DB_POOL_SIZE: int = 5
     DB_MAX_OVERFLOW: int = 10
     DB_POOL_TIMEOUT: int = 30
     DB_POOL_RECYCLE: int = 1800
 
-    # Supabase Specific Configuration (Phase 8)
+    # Supabase Specific Configuration
     SUPABASE_URL: str = ""
     SUPABASE_ANON_KEY: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""

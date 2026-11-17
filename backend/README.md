@@ -7,7 +7,8 @@ Backend foundation for **RepoMind — AI-Powered Repository Intelligence Platfor
 - **Framework**: FastAPI (Async, Layered, Clean Architecture)
 - **ASGI Server**: Uvicorn
 - **Database ORM**: SQLAlchemy 2.x (Async Engine & Sessionmaker)
-- **Database Driver**: `asyncpg` (PostgreSQL) / `aiosqlite` (Local fallback & tests)
+- **Database Engine**: Supabase-managed PostgreSQL (Sole Application Database)
+- **Database Driver**: `asyncpg` (PostgreSQL / Supabase with SSL & connection pooling)
 - **Database Migrations**: Alembic
 - **Authentication**: JWT access & refresh tokens with Argon2 password hashing
 - **Validation & Settings**: Pydantic v2 & Pydantic-Settings

@@ -27,7 +27,7 @@ flowchart LR
     end
 
     subgraph Storage ["Persistent Data Layer"]
-        PostgresDB["PostgreSQL / SQLite\n(SQLAlchemy 2.0 Async)"]
+        PostgresDB["Supabase PostgreSQL\n(SQLAlchemy 2.0 Async)"]
         LocalWS["Workspace Disk\n(storage/workspaces/)"]
     end
 

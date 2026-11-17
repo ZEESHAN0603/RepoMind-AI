@@ -20,7 +20,7 @@ flowchart TD
     Services --> DomainServices
     DomainServices --> Repositories["Data Repositories\n(app/repositories/)"]
     Repositories --> DBModels["SQLAlchemy ORM Models\n(app/models/)"]
-    DBModels --> Database[(PostgreSQL / SQLite)]
+    DBModels --> Database[(Supabase Managed PostgreSQL)]
 ```
 
 ## 2. Directory Hierarchy
