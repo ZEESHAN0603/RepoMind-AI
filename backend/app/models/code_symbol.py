@@ -1,5 +1,5 @@
 import uuid
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Boolean, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -8,6 +8,7 @@ from app.db.base import Base, TimestampMixin
 if TYPE_CHECKING:
     from app.models.repository import Repository
     from app.models.repository_file import RepositoryFile
+    from app.models.code_chunk import CodeChunk
 
 
 class CodeSymbol(Base, TimestampMixin):
@@ -54,6 +55,7 @@ class CodeSymbol(Base, TimestampMixin):
     # Relationships
     repository: Mapped["Repository"] = relationship("Repository", back_populates="symbols")
     file: Mapped["RepositoryFile"] = relationship("RepositoryFile", back_populates="symbols")
+    chunks: Mapped[List["CodeChunk"]] = relationship("CodeChunk", back_populates="symbol")
 
     __table_args__ = (
         Index("ix_code_symbols_repo_type", "repository_id", "symbol_type"),
