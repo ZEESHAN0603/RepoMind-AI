@@ -38,6 +38,14 @@ async def diagnose_database(target_url: Optional[str] = None) -> Dict[str, Any]:
     else:
         engine_kwargs["pool_pre_ping"] = True
         engine_kwargs["pool_timeout"] = 15
+        diag_connect_args: Dict[str, Any] = {}
+        if ":6543" in raw_url or "pooler.supabase.com" in raw_url:
+            diag_connect_args["statement_cache_size"] = 0
+            diag_connect_args["prepared_statement_cache_size"] = 0
+        if "supabase.co" in raw_url or "pooler.supabase.com" in raw_url:
+            diag_connect_args.setdefault("ssl", "require")
+        if diag_connect_args:
+            engine_kwargs["connect_args"] = diag_connect_args
 
     engine = create_async_engine(raw_url, **engine_kwargs)
 

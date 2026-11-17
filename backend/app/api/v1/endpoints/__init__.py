@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     github,
     health,
     repositories,
+    updates,
     users,
 )
 
@@ -23,5 +24,6 @@ __all__ = [
     "github",
     "health",
     "repositories",
+    "updates",
     "users",
 ]

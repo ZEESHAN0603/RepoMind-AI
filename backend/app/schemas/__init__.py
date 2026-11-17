@@ -15,6 +15,20 @@ from app.schemas.code_intelligence import (
     RepositoryAnalysisOverviewResponse,
     SymbolsListResponse,
 )
+from app.schemas.update import (
+    AdHocCompareRequest,
+    AIExplainRequest,
+    AIExplainResponse,
+    FileChangeResponse,
+    ImpactGraphResponse,
+    ImpactRecordResponse,
+    RepositoryVersionResponse,
+    SymbolChangeResponse,
+    UpdateHistoryResponse,
+    UpdateRunCreateRequest,
+    UpdateRunDetailResponse,
+    UpdateRunResponse,
+)
 
 __all__ = [
     "ArchitectureNodeSchema",
@@ -28,5 +42,17 @@ __all__ = [
     "SymbolsListResponse",
     "AnalysisSummaryResponse",
     "RepositoryAnalysisOverviewResponse",
+    "RepositoryVersionResponse",
+    "FileChangeResponse",
+    "SymbolChangeResponse",
+    "ImpactRecordResponse",
+    "UpdateRunResponse",
+    "UpdateRunDetailResponse",
+    "UpdateRunCreateRequest",
+    "AdHocCompareRequest",
+    "AIExplainRequest",
+    "AIExplainResponse",
+    "UpdateHistoryResponse",
+    "ImpactGraphResponse",
 ]
 

@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     from app.models.dependency_snapshot import DependencySnapshot
     from app.models.execution_entry_point import ExecutionEntryPoint
     from app.models.execution_snapshot import ExecutionSnapshot
+    from app.models.repository_version import RepositoryVersion
+    from app.models.repository_update_run import RepositoryUpdateRun
 
 
 class Repository(Base, TimestampMixin):
@@ -143,6 +145,16 @@ class Repository(Base, TimestampMixin):
     )
     dependencies: Mapped[List["CodeDependency"]] = relationship(
         "CodeDependency",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    versions: Mapped[List["RepositoryVersion"]] = relationship(
+        "RepositoryVersion",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    update_runs: Mapped[List["RepositoryUpdateRun"]] = relationship(
+        "RepositoryUpdateRun",
         back_populates="repository",
         cascade="all, delete-orphan",
     )

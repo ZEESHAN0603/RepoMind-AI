@@ -55,14 +55,22 @@ async def copy_table_data(
     src_norm = _normalize_driver(source_url)
     tgt_norm = _normalize_driver(target_url)
 
+    src_connect_args = {"check_same_thread": False} if "sqlite" in src_norm else {}
+    tgt_connect_args = {"check_same_thread": False} if "sqlite" in tgt_norm else {}
+    if ":6543" in tgt_norm or "pooler.supabase.com" in tgt_norm:
+        tgt_connect_args["statement_cache_size"] = 0
+        tgt_connect_args["prepared_statement_cache_size"] = 0
+    if "supabase.co" in tgt_norm or "pooler.supabase.com" in tgt_norm:
+        tgt_connect_args.setdefault("ssl", "require")
+
     src_engine = create_async_engine(
         src_norm,
-        connect_args={"check_same_thread": False} if "sqlite" in src_norm else {},
+        connect_args=src_connect_args,
         pool_pre_ping=True,
     )
     tgt_engine = create_async_engine(
         tgt_norm,
-        connect_args={"check_same_thread": False} if "sqlite" in tgt_norm else {},
+        connect_args=tgt_connect_args,
         pool_pre_ping=True,
     )
 

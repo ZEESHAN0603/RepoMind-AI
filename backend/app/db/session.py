@@ -18,18 +18,32 @@ engine_kwargs = {
 }
 
 db_url = settings.effective_database_url
+connect_args = {}
 
 if "sqlite" in db_url:
-    # SQLite requires check_same_thread=False
-    engine_kwargs["connect_args"] = {"check_same_thread": False}
+    # SQLite requires check_same_thread=False (used in isolated unit tests)
+    connect_args["check_same_thread"] = False
+    engine_kwargs["connect_args"] = connect_args
     engine_kwargs["poolclass"] = NullPool
 else:
-    # PostgreSQL / Supabase connection pooling
+    # Supabase / PostgreSQL connection pooling
     engine_kwargs["pool_size"] = settings.DB_POOL_SIZE
     engine_kwargs["max_overflow"] = settings.DB_MAX_OVERFLOW
     engine_kwargs["pool_pre_ping"] = True
     engine_kwargs["pool_recycle"] = settings.DB_POOL_RECYCLE
     engine_kwargs["pool_timeout"] = settings.DB_POOL_TIMEOUT
+
+    # Supabase Transaction Pooler (Port 6543 / Supavisor) requires disabling statement caches
+    if ":6543" in db_url or "pooler.supabase.com" in db_url:
+        connect_args["statement_cache_size"] = 0
+        connect_args["prepared_statement_cache_size"] = 0
+
+    # Ensure secure SSL handshake for remote Supabase connections
+    if "supabase.co" in db_url or "pooler.supabase.com" in db_url:
+        connect_args.setdefault("ssl", "require")
+
+    if connect_args:
+        engine_kwargs["connect_args"] = connect_args
 
 engine: AsyncEngine = create_async_engine(db_url, **engine_kwargs)
 

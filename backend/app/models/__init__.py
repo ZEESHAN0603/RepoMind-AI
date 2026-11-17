@@ -20,6 +20,11 @@ from app.models.repository_branch import RepositoryBranch
 from app.models.repository_file import RepositoryFile
 from app.models.repository_language import RepositoryLanguage
 from app.models.repository_manifest import RepositoryDependencyManifest
+from app.models.repository_version import RepositoryVersion
+from app.models.repository_update_run import RepositoryUpdateRun
+from app.models.version_file_change import VersionFileChange
+from app.models.version_symbol_change import VersionSymbolChange
+from app.models.version_impact_record import VersionImpactRecord
 from app.models.token import RefreshToken
 from app.models.user import User
 
@@ -46,4 +51,9 @@ __all__ = [
     "ExecutionSnapshot",
     "DependencySnapshot",
     "CodeDependency",
+    "RepositoryVersion",
+    "RepositoryUpdateRun",
+    "VersionFileChange",
+    "VersionSymbolChange",
+    "VersionImpactRecord",
 ]

@@ -7,7 +7,8 @@ Backend foundation for **RepoMind — AI-Powered Repository Intelligence Platfor
 - **Framework**: FastAPI (Async, Layered, Clean Architecture)
 - **ASGI Server**: Uvicorn
 - **Database ORM**: SQLAlchemy 2.x (Async Engine & Sessionmaker)
-- **Database Driver**: `asyncpg` (PostgreSQL) / `aiosqlite` (Local fallback & tests)
+- **Database Engine**: Supabase-managed PostgreSQL (Sole Application Database)
+- **Database Driver**: `asyncpg` (PostgreSQL / Supabase with SSL & connection pooling)
 - **Database Migrations**: Alembic
 - **Authentication**: JWT access & refresh tokens with Argon2 password hashing
 - **Validation & Settings**: Pydantic v2 & Pydantic-Settings
@@ -133,3 +134,14 @@ cd "D:\RepoMind AI\backend"
 - `GET    /api/v1/repositories/{id}/execution/nodes/{symbol_id}/calls` — Get incoming callers and outgoing callees for a symbol
 - `GET    /api/v1/repositories/{id}/execution/trace-path` — Find path between source and target symbols
 - `POST   /api/v1/repositories/{id}/execution/explain` — AI-grounded flow explanation with verified steps and uncertainties
+
+### Repository Update Intelligence (`/api/v1/repositories/{id}/updates`)
+- `GET    /api/v1/repositories/{id}/updates/history` — List update runs, versions, and sync status
+- `POST   /api/v1/repositories/{id}/updates/analyze` — Trigger update analysis between base and target versions
+- `GET    /api/v1/repositories/{id}/updates/{update_run_id}` — Get full update report (stats, blast radius, diffs)
+- `GET    /api/v1/repositories/{id}/updates/{update_run_id}/files` — List changed files with category and line stats
+- `GET    /api/v1/repositories/{id}/updates/{update_run_id}/symbols` — List changed symbols with signature diffs and evidence
+- `GET    /api/v1/repositories/{id}/updates/{update_run_id}/impact` — List blast radius impact records
+- `GET    /api/v1/repositories/{id}/updates/{update_run_id}/graph` — Get blast radius impact sub-graph
+- `POST   /api/v1/repositories/{id}/updates/{update_run_id}/explain` — Generate grounded AI change summary
+- `POST   /api/v1/repositories/{id}/updates/compare` — Ad-hoc commit or snapshot comparison
