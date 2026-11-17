@@ -14,7 +14,8 @@ This codebase is structured cleanly by feature and service abstraction across ba
 - **Phase 4 (Completed)**: Multi-language code intelligence (AST & Tree-sitter parsers, symbols, imports, API endpoints).
 - **Phase 5 (Completed)**: AI & Grounded RAG integration (InstaBox Ollama `qwen3.5:4b` / `nomic-embed-text` with Gemini free-tier fallback).
 - **Phase 6 (Completed)**: Architecture Intelligence (Multi-language module resolver, layer classifier, 6-view graph builder, `@xyflow/react` integration).
-- **Phase 7–10 (Upcoming)**: Execution flow tracing, dependency analysis, update intelligence, and automatic documentation generation.
+- **Phase 7 (Completed)**: Execution Flow Tracing (AST call extraction, multi-tier call resolution, entry-point detection, interactive call graphs, AI flow explanation).
+- **Phase 8–10 (Upcoming)**: Dedicated dependency analysis, update intelligence, and automatic documentation generation.
 
 ## Tech Stack
 

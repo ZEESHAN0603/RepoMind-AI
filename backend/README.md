@@ -125,3 +125,11 @@ cd "D:\RepoMind AI\backend"
 - `POST   /api/v1/repositories` — Connect repository
 - `GET    /api/v1/repositories/{id}` — Get repository details
 - `DELETE /api/v1/repositories/{id}` — Disconnect repository
+
+### Execution Flow Tracing (`/api/v1/repositories/{id}/execution`)
+- `POST   /api/v1/repositories/{id}/execution/analyze` — Trigger call extraction, resolution, and trace generation
+- `GET    /api/v1/repositories/{id}/execution/workspace` — Full execution workspace (traces, nodes, edges, function symbols)
+- `GET    /api/v1/repositories/{id}/execution/entry-points` — List discovered application entry points
+- `GET    /api/v1/repositories/{id}/execution/nodes/{symbol_id}/calls` — Get incoming callers and outgoing callees for a symbol
+- `GET    /api/v1/repositories/{id}/execution/trace-path` — Find path between source and target symbols
+- `POST   /api/v1/repositories/{id}/execution/explain` — AI-grounded flow explanation with verified steps and uncertainties

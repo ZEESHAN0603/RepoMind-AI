@@ -93,6 +93,19 @@ class ParsedEndpoint:
 
 
 @dataclass
+class ParsedCall:
+    callee_name: str  # Direct or qualified callee identifier, e.g. "fetch_data", "self.repo.save", "axios.get"
+    caller_name: Optional[str] = None  # Enclosing function/method name (e.g. "login" or "AuthService.login")
+    callee_attribute: Optional[str] = None  # e.g. "save" in "self.repo.save"
+    call_type: str = "function_call"  # function_call, method_call, constructor, external, dynamic
+    line_number: int = 1
+    column_number: Optional[int] = None
+    arguments: List[str] = field(default_factory=list)
+    evidence: str = ""
+    confidence: ConfidenceLevel = ConfidenceLevel.VERIFIED
+
+
+@dataclass
 class ParserError:
     message: str
     line: Optional[int] = None
@@ -109,5 +122,6 @@ class FileParseResult:
     symbols: List[ParsedSymbol] = field(default_factory=list)
     imports_exports: List[ParsedImportExport] = field(default_factory=list)
     endpoints: List[ParsedEndpoint] = field(default_factory=list)
+    calls: List[ParsedCall] = field(default_factory=list)
     errors: List[ParserError] = field(default_factory=list)
 

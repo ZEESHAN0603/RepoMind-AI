@@ -18,3 +18,4 @@ Welcome to the comprehensive documentation suite for **RepoMind — AI-Powered R
 - [Phase 4: Code Intelligence & Static Analysis](phases/phase-04-code-intelligence.md)
 - [Phase 5: AI Integration & RAG](phases/phase-05-ai-rag.md)
 - [Phase 6: Architecture Intelligence](phases/phase-06-architecture-intelligence.md)
+- [Phase 7: Execution Flow Tracing](phases/phase-07-execution-flow-tracing.md)

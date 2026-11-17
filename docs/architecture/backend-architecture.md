@@ -56,3 +56,13 @@ backend/app/
    - Retrieves semantic chunks via vector cosine similarity.
    - Injects repository context into grounded system prompts.
    - Dispatches inference to InstaBox Ollama with automated Gemini fallback.
+
+4. **`ExecutionFlowService` & `ExecutionFlowGraphBuilder`**:
+   - Parses function and method call expressions via AST and Tree-sitter.
+   - Resolves caller-callee bindings locally and cross-file via `ModuleResolver`.
+   - Discovers application entry points (API endpoints, CLI commands, background jobs, frontend handlers).
+   - Generates bounded directed call graphs (`max_depth = 5`, `max_nodes = 50`) and caches snapshots.
+
+5. **`ExecutionExplainerService`**:
+   - Grounds execution flows against static call traces and source code lines.
+   - Synthesizes plain-English summaries, step explanations, and explicit static analysis limitations using Ollama/Gemini.
