@@ -15,7 +15,9 @@ This codebase is structured cleanly by feature and service abstraction across ba
 - **Phase 5 (Completed)**: AI & Grounded RAG integration (InstaBox Ollama `qwen3.5:4b` / `nomic-embed-text` with Gemini free-tier fallback).
 - **Phase 6 (Completed)**: Architecture Intelligence (Multi-language module resolver, layer classifier, 6-view graph builder, `@xyflow/react` integration).
 - **Phase 7 (Completed)**: Execution Flow Tracing (AST call extraction, multi-tier call resolution, entry-point detection, interactive call graphs, AI flow explanation).
-- **Phase 8–10 (Upcoming)**: Dedicated dependency analysis, update intelligence, and automatic documentation generation.
+- **Phase 8 (Completed)**: Dependency Analysis & Circular Cycle Detection (Tarjan's algorithm, module import graphs, package manifests).
+- **Phase 9 (Completed)**: Repository Update Intelligence (AST Diffing, Line-Shift Invariance, Blast Radius Analysis, Grounded AI Summaries).
+- **Phase 10 (Completed)**: Automatic Documentation Generation (7 technical document sections, version history, approval workflows, Monaco/Textarea split editing, Mermaid diagrams, Markdown/HTML/ZIP exports).
 
 ## Tech Stack
 
@@ -33,6 +35,7 @@ This codebase is structured cleanly by feature and service abstraction across ba
 - **Phase 7**: Execution Flow Tracing & Static Call Resolution.
 - **Phase 8**: Multi-Module Dependency Analysis & Circular Cycle Detection.
 - **Phase 9**: Repository Update Intelligence (AST Diffing, Line-Shift Invariance, Blast Radius Analysis, Grounded AI Summaries).
+- **Phase 10**: Automatic Documentation Generation (README, Architecture, API, Execution Flows, Dependencies, Code Reference, Changelogs, Multi-Format Exports).
 
 ## Local Development (Windows PowerShell)
 

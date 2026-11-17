@@ -44,7 +44,13 @@ backend/
 │   │           ├── health.py           # Health checks
 │   │           ├── auth.py             # Register, login, refresh, logout, me
 │   │           ├── users.py            # User profile management
-│   │           └── repositories.py     # Repository management
+│   │           ├── repositories.py     # Repository management
+│   │           ├── code_intelligence.py # AST & Tree-sitter code analysis
+│   │           ├── architecture.py     # Multi-view architecture graphs
+│   │           ├── execution.py        # Static execution flow tracing
+│   │           ├── dependencies.py     # Dependencies & circular cycle detection
+│   │           ├── updates.py          # Update intelligence & blast radius
+│   │           └── documentation.py    # Automatic documentation generation (Phase 10)
 │   ├── models/
 │   │   ├── user.py                     # User model
 │   │   ├── repository.py               # Repository model

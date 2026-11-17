@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from app.models.execution_snapshot import ExecutionSnapshot
     from app.models.repository_version import RepositoryVersion
     from app.models.repository_update_run import RepositoryUpdateRun
+    from app.models.repository_document import RepositoryDocument
 
 
 class Repository(Base, TimestampMixin):
@@ -155,6 +156,11 @@ class Repository(Base, TimestampMixin):
     )
     update_runs: Mapped[List["RepositoryUpdateRun"]] = relationship(
         "RepositoryUpdateRun",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    documents: Mapped[List["RepositoryDocument"]] = relationship(
+        "RepositoryDocument",
         back_populates="repository",
         cascade="all, delete-orphan",
     )

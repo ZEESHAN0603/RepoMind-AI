@@ -21,3 +21,4 @@ Welcome to the comprehensive documentation suite for **RepoMind — AI-Powered R
 - [Phase 7: Execution Flow Tracing](phases/phase-07-execution-flow-tracing.md)
 - [Phase 8: Dependency Analysis](phases/phase-08-dependency-analysis.md)
 - [Phase 9: Repository Update Intelligence](phases/phase-09-repository-update-intelligence.md)
+- [Phase 10: Automatic Documentation Generation](phases/phase-10-automatic-documentation.md)
