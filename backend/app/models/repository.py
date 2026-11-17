@@ -19,6 +19,9 @@ if TYPE_CHECKING:
     from app.models.repository_manifest import RepositoryDependencyManifest
     from app.models.user import User
     from app.models.architecture_snapshot import ArchitectureSnapshot
+    from app.models.code_call import CodeCall
+    from app.models.execution_entry_point import ExecutionEntryPoint
+    from app.models.execution_snapshot import ExecutionSnapshot
 
 
 class Repository(Base, TimestampMixin):
@@ -110,6 +113,22 @@ class Repository(Base, TimestampMixin):
     )
     architecture_snapshot: Mapped[Optional["ArchitectureSnapshot"]] = relationship(
         "ArchitectureSnapshot",
+        back_populates="repository",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    calls: Mapped[List["CodeCall"]] = relationship(
+        "CodeCall",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    entry_points: Mapped[List["ExecutionEntryPoint"]] = relationship(
+        "ExecutionEntryPoint",
+        back_populates="repository",
+        cascade="all, delete-orphan",
+    )
+    execution_snapshot: Mapped[Optional["ExecutionSnapshot"]] = relationship(
+        "ExecutionSnapshot",
         back_populates="repository",
         uselist=False,
         cascade="all, delete-orphan",

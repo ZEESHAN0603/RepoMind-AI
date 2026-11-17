@@ -7,6 +7,7 @@ import type {
   DependencyAnalysisData,
   DocSectionType,
   DocumentationDocument,
+  ExecutionExplanationResponse,
   ExecutionFlow,
   ExecutionTraceWorkspace,
   FileIntelligence,
@@ -31,6 +32,11 @@ export interface ArchitectureService {
 export interface ExecutionService {
   getExecutionFlows(repositoryId: string): Promise<ExecutionFlow[]>;
   getExecutionWorkspace(repositoryId: string): Promise<ExecutionTraceWorkspace>;
+  explainExecutionFlow?(
+    repositoryId: string,
+    payload: { flowId?: string; symbolId?: string; focusQuestion?: string }
+  ): Promise<ExecutionExplanationResponse>;
+  analyzeExecution?(repositoryId: string): Promise<any>;
 }
 
 export interface DependencyService {

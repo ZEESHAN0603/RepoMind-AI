@@ -5,6 +5,7 @@ from app.analysis.base import BaseCodeParser
 from app.analysis.schemas import (
     ConfidenceLevel,
     FileParseResult,
+    ParsedCall,
     ParsedEndpoint,
     ParsedImportExport,
     ParsedParameter,
@@ -88,6 +89,7 @@ class TreeSitterCodeParser(BaseCodeParser):
         symbols: List[ParsedSymbol] = []
         imports_exports: List[ParsedImportExport] = []
         endpoints: List[ParsedEndpoint] = []
+        calls: List[ParsedCall] = []
         errors: List[ParserError] = []
 
         root_node = tree.root_node
@@ -100,10 +102,11 @@ class TreeSitterCodeParser(BaseCodeParser):
             symbols=symbols,
             imports_exports=imports_exports,
             endpoints=endpoints,
+            calls=calls,
         )
 
-        status = ParseStatus.PARTIAL if (has_errors and (symbols or imports_exports)) else (
-            ParseStatus.FAILED if has_errors and not symbols and not imports_exports else ParseStatus.SUCCESS
+        status = ParseStatus.PARTIAL if (has_errors and (symbols or imports_exports or calls)) else (
+            ParseStatus.FAILED if has_errors and not symbols and not imports_exports and not calls else ParseStatus.SUCCESS
         )
 
         return FileParseResult(
@@ -114,6 +117,7 @@ class TreeSitterCodeParser(BaseCodeParser):
             symbols=symbols,
             imports_exports=imports_exports,
             endpoints=endpoints,
+            calls=calls,
             errors=errors,
         )
 
@@ -144,6 +148,7 @@ class TreeSitterCodeParser(BaseCodeParser):
         symbols: List[ParsedSymbol],
         imports_exports: List[ParsedImportExport],
         endpoints: List[ParsedEndpoint],
+        calls: List[ParsedCall],
     ) -> None:
         node_type = node.type
 
@@ -155,13 +160,18 @@ class TreeSitterCodeParser(BaseCodeParser):
             "method_declaration",
             "function_item",  # Rust
         ):
-            self._handle_function_node(node, source_bytes, scope, symbols, endpoints)
+            self._handle_function_node(node, source_bytes, scope, symbols, endpoints, calls)
             return
 
-        # Arrow functions or function expressions assigned to variables
-        # const myFn = () => { ... }
-        elif node_type in ("lexical_declaration", "variable_declaration"):
-            self._handle_variable_declaration(node, source_bytes, scope, symbols)
+        # Arrow functions or function expressions assigned to variables or class fields
+        elif node_type in (
+            "lexical_declaration",
+            "variable_declaration",
+            "field_definition",
+            "public_field_definition",
+            "property_definition",
+        ):
+            self._handle_variable_declaration(node, source_bytes, scope, symbols, calls)
             return
 
         # Classes and interfaces
@@ -173,7 +183,7 @@ class TreeSitterCodeParser(BaseCodeParser):
             "type_declaration",
             "enum_declaration",
         ):
-            self._handle_class_or_interface(node, source_bytes, scope, symbols, imports_exports, endpoints)
+            self._handle_class_or_interface(node, source_bytes, scope, symbols, imports_exports, endpoints, calls)
             return
 
         # Imports & Exports
@@ -186,12 +196,13 @@ class TreeSitterCodeParser(BaseCodeParser):
             self._handle_import(node, source_bytes, imports_exports)
             return
         elif node_type in ("export_statement", "export_declaration"):
-            self._handle_export(node, source_bytes, imports_exports, symbols, endpoints)
+            self._handle_export(node, source_bytes, imports_exports, symbols, endpoints, calls)
             return
 
-        # API endpoint detection: Express routing calls app.get(...), router.post(...)
-        elif node_type == "call_expression":
+        # API endpoint detection and call expression extraction
+        elif node_type in ("call_expression", "method_invocation", "invocation_expression", "method_call_expression"):
             self._check_express_endpoint(node, source_bytes, endpoints)
+            self._handle_call_expression(node, source_bytes, scope, calls)
 
         # Recurse children for general blocks
         for child in node.children:
@@ -202,6 +213,7 @@ class TreeSitterCodeParser(BaseCodeParser):
                 symbols=symbols,
                 imports_exports=imports_exports,
                 endpoints=endpoints,
+                calls=calls,
             )
 
     def _handle_function_node(
@@ -211,6 +223,7 @@ class TreeSitterCodeParser(BaseCodeParser):
         scope: Optional[str],
         symbols: List[ParsedSymbol],
         endpoints: List[ParsedEndpoint],
+        calls: List[ParsedCall],
     ) -> None:
         name_node = node.child_by_field_name("name")
         name = self._node_text(name_node, source_bytes) if name_node else "anonymous"
@@ -260,12 +273,12 @@ class TreeSitterCodeParser(BaseCodeParser):
         # Check for Spring Boot controller annotations or similar
         self._check_java_endpoint(node, source_bytes, name, endpoints)
 
-        # Recurse inside function body for nested functions
+        # Recurse inside function body for nested functions and calls
         body_node = node.child_by_field_name("body")
         if body_node:
             fn_scope = f"{scope}.{name}" if scope else name
             for child in body_node.children:
-                self._walk_node(child, source_bytes, fn_scope, symbols, [], endpoints)
+                self._walk_node(child, source_bytes, fn_scope, symbols, [], endpoints, calls)
 
     def _handle_variable_declaration(
         self,
@@ -273,8 +286,52 @@ class TreeSitterCodeParser(BaseCodeParser):
         source_bytes: bytes,
         scope: Optional[str],
         symbols: List[ParsedSymbol],
+        calls: List[ParsedCall],
     ) -> None:
-        # Matches: const myFunc = (x: number) => { ... }
+        # Check direct field definition on class: findUser = async (...) => { ... }
+        if node.type in ("field_definition", "public_field_definition", "property_definition"):
+            name_node = node.child_by_field_name("name") or node.child_by_field_name("property")
+            value_node = node.child_by_field_name("value")
+            if name_node and value_node and value_node.type in ("arrow_function", "function_expression"):
+                name = self._node_text(name_node, source_bytes)
+                params_node = value_node.child_by_field_name("parameters")
+                params = self._extract_parameters(params_node, source_bytes)
+                ret_node = value_node.child_by_field_name("return_type")
+                ret_type = self._node_text(ret_node, source_bytes) if ret_node else None
+                is_async = any(c.type == "async" for c in value_node.children)
+
+                symbols.append(
+                    ParsedSymbol(
+                        name=name,
+                        symbol_type=SymbolType.METHOD if scope else SymbolType.FUNCTION,
+                        start_line=node.start_point[0] + 1,
+                        end_line=node.end_point[0] + 1,
+                        start_column=node.start_point[1],
+                        end_column=node.end_point[1],
+                        scope=scope,
+                        signature=self._get_first_line(node, source_bytes),
+                        is_async=is_async,
+                        parameters=params,
+                        return_type=ret_type,
+                        confidence=ConfidenceLevel.VERIFIED,
+                    )
+                )
+
+                fn_scope = f"{scope}.{name}" if scope else name
+                body_node = value_node.child_by_field_name("body")
+                if body_node:
+                    for sub_child in body_node.children:
+                        self._walk_node(sub_child, source_bytes, fn_scope, symbols, [], [], calls)
+                else:
+                    for sub_child in value_node.children:
+                        if sub_child.type not in ("formal_parameters", "parameters", "type_annotation", "=>"):
+                            self._walk_node(sub_child, source_bytes, fn_scope, symbols, [], [], calls)
+                return
+            elif value_node:
+                self._walk_node(value_node, source_bytes, scope, symbols, [], [], calls)
+                return
+
+        # Matches: const myFunc = (x: number) => { ... } or const res = await apiClient.post(...)
         for child in node.children:
             if child.type in ("variable_declarator", "lexical_declarator"):
                 name_node = child.child_by_field_name("name")
@@ -304,6 +361,19 @@ class TreeSitterCodeParser(BaseCodeParser):
                         )
                     )
 
+                    # Recurse inside arrow function body for calls and nested logic
+                    fn_scope = f"{scope}.{name}" if scope else name
+                    body_node = value_node.child_by_field_name("body")
+                    if body_node:
+                        for sub_child in body_node.children:
+                            self._walk_node(sub_child, source_bytes, fn_scope, symbols, [], [], calls)
+                    else:
+                        for sub_child in value_node.children:
+                            if sub_child.type not in ("formal_parameters", "parameters", "type_annotation", "=>"):
+                                self._walk_node(sub_child, source_bytes, fn_scope, symbols, [], [], calls)
+                elif value_node:
+                    self._walk_node(value_node, source_bytes, scope, symbols, [], [], calls)
+
     def _handle_class_or_interface(
         self,
         node: Any,
@@ -312,6 +382,7 @@ class TreeSitterCodeParser(BaseCodeParser):
         symbols: List[ParsedSymbol],
         imports_exports: List[ParsedImportExport],
         endpoints: List[ParsedEndpoint],
+        calls: List[ParsedCall],
     ) -> None:
         name_node = node.child_by_field_name("name")
         name = self._node_text(name_node, source_bytes) if name_node else "AnonymousClass"
@@ -350,7 +421,7 @@ class TreeSitterCodeParser(BaseCodeParser):
         if body_node:
             class_scope = f"{scope}.{name}" if scope else name
             for child in body_node.children:
-                self._walk_node(child, source_bytes, class_scope, symbols, imports_exports, endpoints)
+                self._walk_node(child, source_bytes, class_scope, symbols, imports_exports, endpoints, calls)
 
     def _handle_import(
         self,
@@ -382,12 +453,13 @@ class TreeSitterCodeParser(BaseCodeParser):
         imports_exports: List[ParsedImportExport],
         symbols: List[ParsedSymbol],
         endpoints: List[ParsedEndpoint],
+        calls: List[ParsedCall],
     ) -> None:
         line_num = node.start_point[0] + 1
         decl_node = node.child_by_field_name("declaration")
         start_count = len(symbols)
         if decl_node:
-            self._walk_node(decl_node, source_bytes, None, symbols, imports_exports, endpoints)
+            self._walk_node(decl_node, source_bytes, None, symbols, imports_exports, endpoints, calls)
             for i in range(start_count, len(symbols)):
                 symbols[i].is_exported = True
 
@@ -399,6 +471,82 @@ class TreeSitterCodeParser(BaseCodeParser):
                 line_number=line_num,
             )
         )
+
+    def _handle_call_expression(
+        self,
+        node: Any,
+        source_bytes: bytes,
+        caller_name: Optional[str],
+        calls: List[ParsedCall],
+    ) -> None:
+        fn_node = node.child_by_field_name("function")
+        if not fn_node:
+            fn_node = node.child_by_field_name("name") or (node.children[0] if node.children else None)
+
+        if not fn_node:
+            return
+
+        callee_full = self._node_text(fn_node, source_bytes).strip()
+        if not callee_full:
+            return
+
+        callee_attr = None
+        call_type = "function_call"
+
+        # Check member or property expression
+        if fn_node.type in ("member_expression", "property_identifier", "field_expression", "scoped_identifier"):
+            prop_node = (
+                fn_node.child_by_field_name("property")
+                or fn_node.child_by_field_name("name")
+                or fn_node.child_by_field_name("field")
+            )
+            if prop_node:
+                callee_attr = self._node_text(prop_node, source_bytes).strip()
+            elif "." in callee_full:
+                callee_attr = callee_full.split(".")[-1]
+            call_type = "method_call"
+        elif "." in callee_full or "->" in callee_full or "::" in callee_full:
+            call_type = "method_call"
+            parts = callee_full.replace("->", ".").replace("::", ".").split(".")
+            callee_attr = parts[-1]
+
+        # Arguments extraction
+        args_node = node.child_by_field_name("arguments")
+        arguments: List[str] = []
+        if args_node:
+            for arg_child in args_node.children:
+                if arg_child.type not in ("(", ")", ",", ";", "{", "}"):
+                    arg_text = self._node_text(arg_child, source_bytes).strip()
+                    if arg_text:
+                        arguments.append(arg_text)
+
+        start_line = node.start_point[0] + 1
+        start_col = node.start_point[1]
+        evidence = self._get_line_text(node, source_bytes)
+
+        calls.append(
+            ParsedCall(
+                callee_name=callee_full,
+                caller_name=caller_name,
+                callee_attribute=callee_attr,
+                call_type=call_type,
+                line_number=start_line,
+                column_number=start_col,
+                arguments=arguments,
+                evidence=evidence,
+                confidence=ConfidenceLevel.VERIFIED,
+            )
+        )
+
+    def _get_line_text(self, node: Any, source_bytes: bytes) -> str:
+        line_idx = node.start_point[0]
+        lines = source_bytes.splitlines()
+        if 0 <= line_idx < len(lines):
+            try:
+                return lines[line_idx].decode("utf-8", errors="replace").strip()
+            except Exception:
+                return ""
+        return ""
 
     def _check_express_endpoint(
         self,

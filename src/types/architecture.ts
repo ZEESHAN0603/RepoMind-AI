@@ -144,3 +144,22 @@ export interface ExecutionTraceWorkspace {
   functions: ExecutionFunctionSymbol[];
   traces: ExecutionEntryGraph[];
 }
+
+export interface ExecutionStepExplanation {
+  stepIndex: number;
+  caller: string;
+  callee: string;
+  sourceFile: string;
+  sourceLine: number;
+  explanation: string;
+  confidence: string;
+  verified: boolean;
+}
+
+export interface ExecutionExplanationResponse {
+  summary: string;
+  verifiedSteps: ExecutionStepExplanation[];
+  uncertainties: string[];
+  providerUsed: string;
+}
+

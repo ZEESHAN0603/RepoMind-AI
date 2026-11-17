@@ -906,4 +906,52 @@ export const mockExecutionService: ExecutionService = {
       ],
     };
   },
+
+  async explainExecutionFlow(
+    _repositoryId: string,
+    payload: { flowId?: string; symbolId?: string; focusQuestion?: string }
+  ) {
+    await simulateNetworkDelay(400);
+    return {
+      summary: `Static analysis traced this execution flow through key components. User request enters the HTTP controller and traverses authentication and service layers before returning standardized responses.`,
+      verifiedSteps: [
+        {
+          stepIndex: 1,
+          caller: 'Client UI / Event',
+          callee: 'POST /api/v1/auth/login',
+          sourceFile: 'src/client/auth-form.tsx',
+          sourceLine: 18,
+          explanation: 'User credentials submitted via login trigger function.',
+          confidence: 'verified',
+          verified: true,
+        },
+        {
+          stepIndex: 2,
+          caller: 'POST /api/v1/auth/login',
+          callee: 'authController.login',
+          sourceFile: 'src/routes/auth.router.ts',
+          sourceLine: 14,
+          explanation: 'Route handler receives payload and delegates to AuthController.',
+          confidence: 'verified',
+          verified: true,
+        },
+      ],
+      uncertainties: [
+        'Dynamic dispatch or middleware hooks between router and controller were not statically resolvable.',
+        'Runtime environment variables and database connection state are verified at runtime only.',
+      ],
+      providerUsed: 'ollama (mock fallback)',
+    };
+  },
+
+  async analyzeExecution(repositoryId: string) {
+    await simulateNetworkDelay(300);
+    return {
+      repository_id: repositoryId,
+      status: 'completed',
+      calls_extracted: 12,
+      entry_points_detected: 3,
+      traces_generated: 3,
+    };
+  },
 };

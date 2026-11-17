@@ -17,9 +17,11 @@ import '@xyflow/react/dist/style.css';
 import { useQuery } from '@tanstack/react-query';
 import {
   Activity,
+  AlertTriangle,
   ArrowDownLeft,
   ArrowRight,
   ArrowUpRight,
+  Brain,
   Check,
   ChevronDown,
   ChevronRight,
@@ -34,12 +36,14 @@ import {
   History,
   Layers,
   ListOrdered,
+  Loader2,
   Maximize2,
   Minimize2,
   Play,
   RotateCcw,
   Search,
   Shrink,
+  Sparkles,
   Workflow,
   ZoomIn,
   ZoomOut,
@@ -57,6 +61,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -69,6 +80,7 @@ import { cn } from '@/lib/utils';
 import { executionService, repositoryService } from '@/services';
 import { useThemeStore } from '@/stores/theme.store';
 import type {
+  ExecutionExplanationResponse,
   ExecutionFunctionSymbol,
   ExecutionGraphNode,
   ExecutionNodeType,
@@ -204,6 +216,10 @@ function ExecutionTracingWorkspace() {
   );
   const [viewMode, setViewMode] = useState<'graph' | 'steps'>('graph');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isExplaining, setIsExplaining] = useState(false);
+  const [explanation, setExplanation] = useState<ExecutionExplanationResponse | null>(null);
+  const [isExplainOpen, setIsExplainOpen] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const traces = workspaceQuery.data?.traces ?? [];
   const functions = workspaceQuery.data?.functions ?? [];
@@ -252,6 +268,43 @@ function ExecutionTracingWorkspace() {
     },
     [traces, fitView]
   );
+
+  const handleExplainFlow = useCallback(async () => {
+    if (!activeTrace) return;
+    setIsExplaining(true);
+    setIsExplainOpen(true);
+    try {
+      const res = await executionService.explainExecutionFlow?.(id, {
+        flowId: activeTrace.flow.id,
+        symbolId: selectedNodeId ?? activeTrace.flow.rootNodeId,
+      });
+      if (res) {
+        setExplanation(res);
+        toast.success('AI execution explanation generated');
+      }
+    } catch {
+      toast.error('Failed to generate AI execution flow explanation');
+    } finally {
+      setIsExplaining(false);
+    }
+  }, [id, activeTrace, selectedNodeId]);
+
+  const handleTriggerAnalysis = useCallback(async () => {
+    setIsAnalyzing(true);
+    try {
+      const res = await executionService.analyzeExecution?.(id);
+      if (res) {
+        toast.success(
+          `Analysis completed: ${res.calls_extracted || 0} calls extracted, ${res.traces_generated || 0} traces generated`
+        );
+        workspaceQuery.refetch();
+      }
+    } catch {
+      toast.error('Failed to trigger execution analysis');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [id, workspaceQuery]);
 
   // Functions grouped by file path in Left Explorer
   const groupedFunctions = useMemo(() => {
@@ -587,6 +640,37 @@ function ExecutionTracingWorkspace() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExplainFlow}
+              disabled={!activeTrace || isExplaining}
+              className="h-8 gap-1.5 border-primary/30 text-xs font-medium text-primary hover:bg-primary/10"
+            >
+              {isExplaining ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Sparkles className="size-3.5" />
+              )}
+              Explain with AI
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleTriggerAnalysis}
+              disabled={isAnalyzing}
+              className="h-8 gap-1.5 text-xs font-medium"
+            >
+              {isAnalyzing ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <RotateCcw className="size-3.5" />
+              )}
+              Re-analyze Flow
+            </Button>
+
             <div className="flex items-center gap-1 rounded-lg bg-muted p-1">
               <button
                 type="button"
@@ -1181,6 +1265,99 @@ function ExecutionTracingWorkspace() {
           </Card>
         </div>
       )}
+      {/* AI Explanation Modal */}
+      <Dialog open={isExplainOpen} onOpenChange={setIsExplainOpen}>
+        <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-6">
+          <DialogHeader className="border-b border-border pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <Brain className="size-4" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-semibold">
+                  AI Grounded Execution Flow Explanation
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  Trace: {activeTrace?.flow.title} ({activeTrace?.flow.entryPoint})
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <ScrollArea className="flex-1 pr-3 pt-3">
+            {isExplaining ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
+                <Loader2 className="size-8 animate-spin text-primary" />
+                <p className="text-sm font-medium">Synthesizing execution flow using source static evidence...</p>
+                <p className="text-xs text-muted-foreground">Analyzing caller-callee bindings and cross-file paths</p>
+              </div>
+            ) : explanation ? (
+              <div className="space-y-4 text-xs">
+                {/* Summary */}
+                <div className="rounded-lg border border-border bg-card p-3.5 space-y-1.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                    Flow Summary
+                  </span>
+                  <p className="text-sm leading-relaxed text-foreground">
+                    {explanation.summary}
+                  </p>
+                </div>
+
+                {/* Verified Steps */}
+                <div className="space-y-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Verified Execution Sequence ({explanation.verifiedSteps.length} steps)
+                  </span>
+                  <div className="space-y-2">
+                    {explanation.verifiedSteps.map((st) => (
+                      <div
+                        key={st.stepIndex}
+                        className="rounded-lg border border-border bg-background p-3 space-y-1.5"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="flex size-5 items-center justify-center rounded bg-primary/15 font-mono text-[10px] font-semibold text-primary">
+                              {st.stepIndex}
+                            </span>
+                            <span className="font-mono text-xs font-semibold text-foreground">
+                              {st.caller} → {st.callee}
+                            </span>
+                          </div>
+                          <ConfidenceBadge confidence={st.confidence as any} />
+                        </div>
+                        <p className="text-xs text-muted-foreground">{st.explanation}</p>
+                        <p className="font-mono text-[10px] text-muted-foreground">
+                          {st.sourceFile}:{st.sourceLine}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Uncertainties & Static Limits */}
+                {explanation.uncertainties && explanation.uncertainties.length > 0 && (
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3.5 space-y-2">
+                    <div className="flex items-center gap-1.5 text-amber-500 font-semibold text-xs">
+                      <AlertTriangle className="size-4 shrink-0" />
+                      Static Analysis Boundaries & Uncertainties
+                    </div>
+                    <ul className="list-disc list-inside space-y-1 text-muted-foreground text-[11px]">
+                      {explanation.uncertainties.map((u, i) => (
+                        <li key={i}>{u}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-2 border-t border-border">
+                  <span>Provider: {explanation.providerUsed}</span>
+                  <span className="text-emerald-500">Grounding: 100% Static Source Evidence</span>
+                </div>
+              </div>
+            ) : null}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </PageFadeIn>
   );
 }

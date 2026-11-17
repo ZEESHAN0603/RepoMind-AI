@@ -6,6 +6,7 @@ from app.analysis.base import BaseCodeParser
 from app.analysis.schemas import (
     ConfidenceLevel,
     FileParseResult,
+    ParsedCall,
     ParsedEndpoint,
     ParsedImportExport,
     ParsedParameter,
@@ -79,7 +80,10 @@ class PythonAstParser(BaseCodeParser):
         symbols: List[ParsedSymbol] = []
         imports_exports: List[ParsedImportExport] = []
         endpoints: List[ParsedEndpoint] = []
+        calls: List[ParsedCall] = []
         errors: List[ParserError] = []
+
+        lines = code.splitlines()
 
         # Find explicit __all__ exports if defined
         exported_names: Set[str] = self._extract_all_exports(tree)
@@ -91,7 +95,9 @@ class PythonAstParser(BaseCodeParser):
             symbols=symbols,
             imports_exports=imports_exports,
             endpoints=endpoints,
+            calls=calls,
             exported_names=exported_names,
+            lines=lines,
         )
 
         return FileParseResult(
@@ -102,6 +108,7 @@ class PythonAstParser(BaseCodeParser):
             symbols=symbols,
             imports_exports=imports_exports,
             endpoints=endpoints,
+            calls=calls,
             errors=errors,
         )
 
@@ -112,7 +119,9 @@ class PythonAstParser(BaseCodeParser):
         symbols: List[ParsedSymbol],
         imports_exports: List[ParsedImportExport],
         endpoints: List[ParsedEndpoint],
+        calls: List[ParsedCall],
         exported_names: Set[str],
+        lines: List[str],
     ) -> None:
         for child in ast.iter_child_nodes(node):
             if isinstance(child, ast.FunctionDef) or isinstance(child, ast.AsyncFunctionDef):
@@ -121,7 +130,9 @@ class PythonAstParser(BaseCodeParser):
                     scope=scope,
                     symbols=symbols,
                     endpoints=endpoints,
+                    calls=calls,
                     exported_names=exported_names,
+                    lines=lines,
                 )
             elif isinstance(child, ast.ClassDef):
                 self._process_class(
@@ -130,12 +141,17 @@ class PythonAstParser(BaseCodeParser):
                     symbols=symbols,
                     imports_exports=imports_exports,
                     endpoints=endpoints,
+                    calls=calls,
                     exported_names=exported_names,
+                    lines=lines,
                 )
             elif isinstance(child, (ast.Import, ast.ImportFrom)):
                 self._process_import(child, imports_exports)
             elif isinstance(child, (ast.Assign, ast.AnnAssign)):
                 self._process_type_alias_or_variable(child, scope, symbols)
+                self._collect_calls_in_node(child, caller_name=None, calls=calls, lines=lines)
+            elif isinstance(child, ast.Expr):
+                self._collect_calls_in_node(child, caller_name=None, calls=calls, lines=lines)
             else:
                 # Recurse for blocks (if, with, try, etc.)
                 if not isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -145,7 +161,9 @@ class PythonAstParser(BaseCodeParser):
                         symbols=symbols,
                         imports_exports=imports_exports,
                         endpoints=endpoints,
+                        calls=calls,
                         exported_names=exported_names,
+                        lines=lines,
                     )
 
     def _process_function(
@@ -154,7 +172,9 @@ class PythonAstParser(BaseCodeParser):
         scope: Optional[str],
         symbols: List[ParsedSymbol],
         endpoints: List[ParsedEndpoint],
+        calls: List[ParsedCall],
         exported_names: Set[str],
+        lines: List[str],
     ) -> None:
         is_async = isinstance(node, ast.AsyncFunctionDef)
         is_method = scope is not None
@@ -286,7 +306,9 @@ class PythonAstParser(BaseCodeParser):
                     scope=inner_scope,
                     symbols=symbols,
                     endpoints=endpoints,
+                    calls=calls,
                     exported_names=exported_names,
+                    lines=lines,
                 )
             elif isinstance(sub, ast.ClassDef):
                 self._process_class(
@@ -295,8 +317,12 @@ class PythonAstParser(BaseCodeParser):
                     symbols=symbols,
                     imports_exports=[],
                     endpoints=endpoints,
+                    calls=calls,
                     exported_names=exported_names,
+                    lines=lines,
                 )
+            else:
+                self._collect_calls_in_node(sub, caller_name=inner_scope, calls=calls, lines=lines)
 
     def _process_class(
         self,
@@ -305,7 +331,9 @@ class PythonAstParser(BaseCodeParser):
         symbols: List[ParsedSymbol],
         imports_exports: List[ParsedImportExport],
         endpoints: List[ParsedEndpoint],
+        calls: List[ParsedCall],
         exported_names: Set[str],
+        lines: List[str],
     ) -> None:
         name = node.name
         visibility = "private" if name.startswith("__") and not name.endswith("__") else (
@@ -351,7 +379,9 @@ class PythonAstParser(BaseCodeParser):
                     scope=class_scope,
                     symbols=symbols,
                     endpoints=endpoints,
+                    calls=calls,
                     exported_names=exported_names,
+                    lines=lines,
                 )
             elif isinstance(item, ast.ClassDef):
                 self._process_class(
@@ -360,8 +390,89 @@ class PythonAstParser(BaseCodeParser):
                     symbols=symbols,
                     imports_exports=imports_exports,
                     endpoints=endpoints,
+                    calls=calls,
                     exported_names=exported_names,
+                    lines=lines,
                 )
+            else:
+                self._collect_calls_in_node(item, caller_name=class_scope, calls=calls, lines=lines)
+
+    def _record_call(
+        self,
+        call_node: ast.Call,
+        caller_name: Optional[str],
+        calls: List[ParsedCall],
+        lines: List[str],
+    ) -> None:
+        func = call_node.func
+        callee_attr = None
+        callee_name = ""
+        call_type = "function_call"
+
+        if isinstance(func, ast.Name):
+            callee_name = func.id
+            callee_attr = None
+            call_type = "function_call"
+        elif isinstance(func, ast.Attribute):
+            callee_attr = func.attr
+            callee_name = self._unparse_safe(func)
+            if isinstance(func.value, ast.Name) and func.value.id in ("self", "cls"):
+                call_type = "method_call"
+            else:
+                call_type = "method_call" if "." in callee_name else "function_call"
+        elif isinstance(func, ast.Call):
+            callee_name = self._unparse_safe(func)
+            call_type = "chained_call"
+        else:
+            callee_name = self._unparse_safe(func)
+            call_type = "dynamic"
+
+        if not callee_name:
+            callee_name = "<anonymous_call>"
+
+        arguments: List[str] = []
+        for a in call_node.args:
+            arg_str = self._unparse_safe(a)
+            if arg_str:
+                arguments.append(arg_str)
+        for kw in call_node.keywords:
+            val_str = self._unparse_safe(kw.value)
+            if kw.arg:
+                arguments.append(f"{kw.arg}={val_str}")
+            else:
+                arguments.append(f"**{val_str}")
+
+        line_num = getattr(call_node, "lineno", 1)
+        col_num = getattr(call_node, "col_offset", None)
+        evidence = lines[line_num - 1].strip() if lines and 0 < line_num <= len(lines) else ""
+
+        calls.append(
+            ParsedCall(
+                callee_name=callee_name,
+                caller_name=caller_name,
+                callee_attribute=callee_attr,
+                call_type=call_type,
+                line_number=line_num,
+                column_number=col_num,
+                arguments=arguments,
+                evidence=evidence,
+                confidence=ConfidenceLevel.VERIFIED,
+            )
+        )
+
+    def _collect_calls_in_node(
+        self,
+        node: ast.AST,
+        caller_name: Optional[str],
+        calls: List[ParsedCall],
+        lines: List[str],
+    ) -> None:
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            if isinstance(child, ast.Call):
+                self._record_call(child, caller_name, calls, lines)
+            self._collect_calls_in_node(child, caller_name, calls, lines)
 
     def _process_import(self, node: Any, imports_exports: List[ParsedImportExport]) -> None:
         if isinstance(node, ast.Import):
