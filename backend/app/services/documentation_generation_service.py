@@ -516,9 +516,12 @@ class DocumentationGenerationService:
         ]
 
         for ep in entry_points:
-            verified_badge = "Yes" if ep.is_verified else "Inferred"
-            route_str = f"`{ep.http_method or ''} {ep.route_path or ''}`".strip() or "—"
-            lines.append(f"| `{ep.entry_point_type}` | **{ep.name}** | {route_str} | `{ep.file_path}#L{ep.line_number}` | {verified_badge} |")
+            is_ver = getattr(ep, "confidence", "") == "verified" or getattr(ep, "is_verified", False)
+            verified_badge = "Yes" if is_ver else "Inferred"
+            route_str = f"`{getattr(ep, 'http_method', '') or ''} {getattr(ep, 'route_path', '') or ''}`".strip() or "—"
+            ep_type = getattr(ep, "entry_type", None) or getattr(ep, "entry_point_type", "function")
+            ep_name = getattr(ep, "display_name", None) or getattr(ep, "name", "Entry Point")
+            lines.append(f"| `{ep_type}` | **{ep_name}** | {route_str} | `{ep.file_path}#L{ep.line_number}` | {verified_badge} |")
 
         lines.extend(["", "## Static Call Chains & Invocations", ""])
         if calls:
@@ -527,8 +530,10 @@ class DocumentationGenerationService:
                 "| :--- | :--- | :--- | :--- | :--- |",
             ])
             for c in calls[:30]:
-                fpath = file_map.get(c.file_id, "unknown")
-                lines.append(f"| `{c.caller_symbol_name or 'module'}` | `{c.callee_name}` | `{c.call_type}` | `{c.resolution_status}` | `{fpath}#L{c.line_number}` |")
+                fpath = getattr(c, "caller_file_path", None) or file_map.get(getattr(c, "caller_file_id", getattr(c, "file_id", None)), "unknown")
+                caller_name = getattr(c, "caller_name", None) or getattr(c, "caller_symbol_name", "module") or "module"
+                res_status = getattr(c, "resolution_status", "resolved")
+                lines.append(f"| `{caller_name}` | `{c.callee_name}` | `{c.call_type}` | `{res_status}` | `{fpath}#L{c.line_number}` |")
         else:
             lines.append("No static call chains currently extracted.")
 
@@ -753,6 +758,24 @@ class DocumentationGenerationService:
         generated_docs = []
 
         for dtype in all_types:
+            existing_doc = await doc_repo.get_document_by_type(repository_id, dtype)
+            if existing_doc and existing_doc.status == "approved" and not force_refresh:
+                generated_docs.append({
+                    "id": existing_doc.id,
+                    "repository_id": repository_id,
+                    "doc_type": existing_doc.doc_type,
+                    "title": existing_doc.title,
+                    "description": existing_doc.description,
+                    "status": existing_doc.status,
+                    "confidence": existing_doc.confidence,
+                    "version_number": existing_doc.version_number,
+                    "content_length": len(existing_doc.content),
+                    "last_generated_at": existing_doc.last_generated_at,
+                    "approved_at": existing_doc.approved_at,
+                    "approved_by": existing_doc.approved_by,
+                })
+                continue
+
             content = ""
             title = ""
             desc = ""

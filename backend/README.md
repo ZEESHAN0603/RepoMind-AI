@@ -1,6 +1,6 @@
-# RepoMind — Backend Foundation (Phase 2)
+# RepoMind — Backend Architecture & Services
 
-Backend foundation for **RepoMind — AI-Powered Repository Intelligence Platform**.
+Backend services for **RepoMind — AI-Powered Repository Intelligence Platform**.
 
 ## Architecture & Technology Stack
 - **Language**: Python 3.11
@@ -8,7 +8,8 @@ Backend foundation for **RepoMind — AI-Powered Repository Intelligence Platfor
 - **ASGI Server**: Uvicorn
 - **Database ORM**: SQLAlchemy 2.x (Async Engine & Sessionmaker)
 - **Database Engine**: Supabase-managed PostgreSQL (Sole Application Database)
-- **Database Driver**: `asyncpg` (PostgreSQL / Supabase with SSL & connection pooling)
+- **Database Driver**: `asyncpg` (PostgreSQL / Supabase with SSL & connection pooling, pooler cache optimization)
+- **Rate Limiting**: `slowapi` on sensitive endpoints (auth, chat)
 - **Database Migrations**: Alembic
 - **Authentication**: JWT access & refresh tokens with Argon2 password hashing
 - **Validation & Settings**: Pydantic v2 & Pydantic-Settings

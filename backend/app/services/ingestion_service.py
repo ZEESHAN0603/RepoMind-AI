@@ -181,6 +181,24 @@ class IngestionService:
                 await file_repo.delete_files_by_repo(repo.id)
                 await file_repo.save_files_batch(files)
 
+                # Create baseline workspace snapshot for version comparisons
+                try:
+                    self.workspace_service.create_snapshot(user_id=user_id, repository_id=repo.id, snapshot_id="baseline")
+                    from app.repositories.update_repository import UpdateRepository
+                    from app.models.repository_version import RepositoryVersion
+                    up_repo = UpdateRepository(session)
+                    existing_v = await up_repo.list_versions_by_repo(repo.id, limit=1)
+                    if not existing_v:
+                        base_version = RepositoryVersion(
+                            repository_id=repo.id,
+                            version_tag="v1.0.0",
+                            commit_sha=repo.current_commit_sha,
+                            source_type="github_commit" if repo.source_type.startswith("github") else "snapshot",
+                        )
+                        await up_repo.create_version(base_version)
+                except Exception as snap_ex:
+                    logger.warning("Could not create baseline workspace snapshot: %s", snap_ex)
+
                 # Stage 4: Technology, Language & Framework Detection
                 await job_repo.update_progress(job, "analyzing", "Detecting languages and frameworks", 80)
                 await session.commit()

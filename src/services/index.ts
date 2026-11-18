@@ -17,6 +17,8 @@ import { apiExecutionService } from './api/execution.api';
 import { apiDependencyService } from './api/dependency.api';
 import { apiUpdatesService } from './api/updates.api';
 import { apiDocumentationService } from './api/documentation.api';
+import { apiAuthService } from './api/auth.api';
+import { apiExplorerService } from './api/explorer.api';
 import { mockArchitectureService } from './mock/architecture.mock';
 import { mockAssistantService } from './mock/assistant.mock';
 import { mockAuthService } from './mock/auth.mock';
@@ -30,7 +32,7 @@ import { mockUpdatesService } from './mock/updates.mock';
 
 // Service registry: Real API repository service backed by Phase 3 backend endpoints
 export const repositoryService: RepositoryService = apiRepositoryService;
-export const explorerService: ExplorerService = mockExplorerService;
+export const explorerService: ExplorerService = apiExplorerService;
 export const architectureService: ArchitectureService = apiArchitectureService;
 export const executionService: ExecutionService = apiExecutionService;
 export const dependencyService: DependencyService = apiDependencyService;
@@ -38,4 +40,4 @@ export const updatesService: UpdatesService = apiUpdatesService;
 export const documentationService: DocumentationService = apiDocumentationService;
 export const assistantService: AssistantService = apiAssistantService;
 export const settingsService: SettingsService = mockSettingsService;
-export const authService: AuthService = mockAuthService;
+export const authService: AuthService = apiAuthService;

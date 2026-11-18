@@ -195,3 +195,27 @@ class DocumentationRepository:
         )
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
+
+    async def mark_documents_as_stale(
+        self,
+        repository_id: str,
+        doc_types: Optional[List[str]] = None,
+    ) -> List[RepositoryDocument]:
+        """
+        Transitions approved documents to 'stale' status when a repository update occurs,
+        identifying outdated documentation without destructively overwriting approved content.
+        """
+        query = select(RepositoryDocument).where(
+            RepositoryDocument.repository_id == repository_id,
+            RepositoryDocument.status == "approved",
+        )
+        if doc_types:
+            query = query.where(RepositoryDocument.doc_type.in_(doc_types))
+
+        result = await self.session.execute(query)
+        stale_docs = list(result.scalars().all())
+        for doc in stale_docs:
+            doc.status = "stale"
+            doc.updated_at = utc_now()
+        await self.session.flush()
+        return stale_docs
