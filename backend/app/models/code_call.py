@@ -31,28 +31,24 @@ class CodeCall(Base, TimestampMixin):
     caller_symbol_id: Mapped[Optional[str]] = mapped_column(
         String(36),
         ForeignKey("code_symbols.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+        nullable=True
     )
     callee_symbol_id: Mapped[Optional[str]] = mapped_column(
         String(36),
         ForeignKey("code_symbols.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+        nullable=True
     )
     caller_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     callee_name: Mapped[str] = mapped_column(String(500), nullable=False, index=True)
     caller_file_id: Mapped[Optional[str]] = mapped_column(
         String(36),
         ForeignKey("repository_files.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True,
+        nullable=True
     )
     callee_file_id: Mapped[Optional[str]] = mapped_column(
         String(36),
         ForeignKey("repository_files.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+        nullable=True
     )
     caller_file_path: Mapped[str] = mapped_column(String(500), nullable=False)
     callee_file_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)

@@ -1,5 +1,5 @@
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter
+from fastapi import APIRouter, Response, status
 from pydantic import BaseModel
 
 from app.ai.provider_manager import ProviderManager
@@ -39,8 +39,10 @@ class AIProvidersHealthResponse(BaseModel):
     summary="API v1 Health Check",
     description="Check the operational status of the RepoMind v1 API and database.",
 )
-async def api_v1_health() -> HealthCheckResponse:
+async def api_v1_health(response: Response) -> HealthCheckResponse:
     db_ok = await check_db_health()
+    if not db_ok:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     return HealthCheckResponse(
         status="healthy" if db_ok else "degraded",
         app=settings.APP_NAME,

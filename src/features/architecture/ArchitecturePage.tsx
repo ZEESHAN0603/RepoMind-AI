@@ -47,7 +47,6 @@ import { ConfidenceBadge } from '@/components/common/ConfidenceBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorState } from '@/components/common/ErrorState';
 import { PageFadeIn } from '@/components/common/MotionPrimitives';
-import { SampleDataBanner } from '@/components/common/SampleDataBanner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -506,8 +505,6 @@ function ArchitectureWorkspace() {
           ))}
         </div>
       </div>
-
-      <SampleDataBanner message="Sample Phase 1 Architecture — Supports 10 architectural categories, 6 focused views, group collapse/expand, and confidence filtering." />
 
       {/* Search, Confidence & Group Collapse Controls */}
       <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-3.5 surface-card">

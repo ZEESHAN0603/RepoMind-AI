@@ -15,25 +15,16 @@ interface AuthState {
   clearError: () => void;
 }
 
-const DEFAULT_DEMO_USER: AuthUser = {
-  id: 'usr-demo-01',
-  name: 'Alex Rivera',
-  email: 'alex.rivera@repomind.dev',
-  avatarInitials: 'AR',
-  provider: 'email',
-};
-
 function getInitialUser(): AuthUser | null {
-  if (typeof window === 'undefined') return DEFAULT_DEMO_USER;
+  if (typeof window === 'undefined') return null;
   try {
     const raw = window.localStorage.getItem(APP_CONFIG.AUTH_STORAGE_KEY);
-    if (raw === 'signed_out') return null;
-    if (raw) {
-      return JSON.parse(raw) as AuthUser;
-    }
-    return DEFAULT_DEMO_USER;
+    if (!raw || raw === 'signed_out') return null;
+    const token = window.localStorage.getItem('repomind_access_token');
+    if (!token) return null;
+    return JSON.parse(raw) as AuthUser;
   } catch {
-    return DEFAULT_DEMO_USER;
+    return null;
   }
 }
 

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
@@ -25,8 +25,6 @@ class ExecutionSnapshot(Base, TimestampMixin):
         String(36),
         ForeignKey("repositories.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True,
-        index=True,
     )
     workspace_data_json: Mapped[str] = mapped_column(Text, nullable=False)
     entry_point_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
@@ -41,5 +39,6 @@ class ExecutionSnapshot(Base, TimestampMixin):
     repository: Mapped["Repository"] = relationship("Repository", back_populates="execution_snapshot")
 
     __table_args__ = (
+        UniqueConstraint("repository_id"),
         Index("ix_execution_snapshots_repo", "repository_id"),
     )

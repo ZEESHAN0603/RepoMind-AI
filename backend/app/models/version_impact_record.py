@@ -24,8 +24,7 @@ class VersionImpactRecord(Base, TimestampMixin):
     update_run_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("repository_update_runs.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        nullable=False
     )
     affected_type: Mapped[str] = mapped_column(String(50), nullable=False)  # symbol, file, endpoint, architecture_component
     affected_identifier: Mapped[str] = mapped_column(String(500), nullable=False)

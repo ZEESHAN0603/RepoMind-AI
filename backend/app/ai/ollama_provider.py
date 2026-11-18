@@ -82,9 +82,7 @@ class OllamaProvider(BaseLLMProvider):
         await self._client.aclose()
 
     def _get_auth_params(self) -> Dict[str, str]:
-        """Returns query parameters including private port token if configured."""
-        if self._access_token:
-            return {"_token": self._access_token}
+
         return {}
 
     def _sanitize_error_text(self, text: str) -> str:
@@ -249,6 +247,7 @@ class OllamaProvider(BaseLLMProvider):
         payload = {
             "model": target_model,
             "messages": payload_messages,
+            "think": False,
             "stream": False,
             "options": options,
         }

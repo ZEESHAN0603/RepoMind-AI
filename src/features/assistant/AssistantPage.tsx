@@ -15,7 +15,6 @@ import { Link, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ConfidenceBadge } from '@/components/common/ConfidenceBadge';
 import { ErrorState } from '@/components/common/ErrorState';
-import { SampleDataBanner } from '@/components/common/SampleDataBanner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -155,8 +154,6 @@ export function AssistantPage() {
           New Conversation
         </Button>
       </div>
-
-      <SampleDataBanner message="Sample Phase 1 Assistant — Responses below are deterministic mock examples (not live Ollama or Gemini output). Type 'simulate error' to preview error handling." />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         {/* Conversation History & Context */}

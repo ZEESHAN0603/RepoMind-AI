@@ -447,7 +447,7 @@ export function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
                 <CardTitle className="text-base">AI Provider Status</CardTitle>
-                <CardDescription>Mock Phase 1 configuration</CardDescription>
+                <CardDescription>Configured inference architecture</CardDescription>
               </div>
               <Cpu className="size-4 text-muted-foreground" />
             </CardHeader>
@@ -461,8 +461,8 @@ export function DashboardPage() {
                     {settings.models.generationModel}
                   </p>
                 </div>
-                <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                  Mock Ready
+                <span className={`font-medium ${settings.providers.ollamaStatus === 'connected' ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                  {settings.providers.ollamaStatus === 'connected' ? 'Ready' : 'Offline'}
                 </span>
               </div>
 

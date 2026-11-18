@@ -30,14 +30,12 @@ class ExecutionEntryPoint(Base, TimestampMixin):
     symbol_id: Mapped[Optional[str]] = mapped_column(
         String(36),
         ForeignKey("code_symbols.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+        nullable=True
     )
     file_id: Mapped[Optional[str]] = mapped_column(
         String(36),
         ForeignKey("repository_files.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True,
+        nullable=True
     )
     file_path: Mapped[str] = mapped_column(String(500), nullable=False)
     entry_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)

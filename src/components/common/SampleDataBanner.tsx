@@ -2,11 +2,18 @@ import { Info } from 'lucide-react';
 
 interface SampleDataBannerProps {
   message?: string;
+  forceShow?: boolean;
 }
 
 export function SampleDataBanner({
-  message = 'Phase 1 Frontend Preview — Displaying sample static analysis data. Live repository parsing and AI inference connect in Phase 2+.',
+  message,
+  forceShow = false,
 }: SampleDataBannerProps) {
+  // In production builds, suppress prototype preview banners
+  if (!forceShow || !message) {
+    return null;
+  }
+
   return (
     <div
       role="status"

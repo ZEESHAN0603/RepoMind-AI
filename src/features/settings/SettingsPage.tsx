@@ -14,7 +14,6 @@ import {
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
-import { SampleDataBanner } from '@/components/common/SampleDataBanner';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -81,7 +80,7 @@ export function SettingsPage() {
         },
       }),
     onSuccess: () => {
-      toast.success('Workspace settings saved (Phase 1 mock state).');
+      toast.success('Workspace settings saved.');
     },
   });
 
@@ -128,8 +127,6 @@ export function SettingsPage() {
           Reset Defaults
         </Button>
       </div>
-
-      <SampleDataBanner message="Phase 1 Mock Settings — Provider and token controls preview future backend configuration. Never enter or store real API secrets in frontend local storage." />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="space-y-6 lg:col-span-6">
@@ -571,10 +568,8 @@ export function SettingsPage() {
               </div>
 
               <p className="leading-relaxed">
-                Phase 1 runs entirely in the browser with sample mock datasets. When
-                the backend is introduced in Phase 2+, repository ingestion will
-                validate ZIP boundaries, isolate tenants, and redact secrets before
-                indexing.
+                RepoMind operates securely with tenant isolation, ZIP boundary validation,
+                and automatic secret redaction before any cloud inference dispatch.
               </p>
             </CardContent>
           </Card>
@@ -585,7 +580,7 @@ export function SettingsPage() {
         open={resetOpen}
         onOpenChange={setResetOpen}
         title="Reset workspace settings?"
-        description="This restores AI provider, model, and repository preferences to their Phase 1 defaults."
+        description="This restores AI provider, model, and repository preferences to their system defaults."
         confirmLabel="Reset Settings"
         onConfirm={() => {
           resetSettings();

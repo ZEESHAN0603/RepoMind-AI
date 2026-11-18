@@ -2,11 +2,13 @@ import time
 from typing import Any, Dict, List, Optional
 import httpx
 
+
 from app.ai.base import BaseLLMProvider
 from app.ai.exceptions import (
     AIProviderError,
     ProviderResponseError,
     ProviderUnavailableError,
+    ProviderTimeoutError,
     QuotaExceededError,
 )
 from app.ai.schemas import (
@@ -38,7 +40,11 @@ class GeminiProvider(BaseLLMProvider):
         self._model = model or settings.GEMINI_MODEL
         self._timeout_seconds = timeout_seconds or settings.GEMINI_TIMEOUT_SECONDS
         self._client = httpx.AsyncClient(
-            timeout=httpx.Timeout(timeout=self._timeout_seconds, connect=10.0)
+            timeout=httpx.Timeout(timeout=self._timeout_seconds, connect=10.0),
+            headers={
+                "x-goog-api-key": self._api_key,
+                "Content-Type": "application/json",
+            },
         )
 
     @property
@@ -58,7 +64,7 @@ class GeminiProvider(BaseLLMProvider):
 
         start_t = time.perf_counter()
         try:
-            url = f"{GEMINI_API_BASE}/models?key={self._api_key}"
+            url = f"{GEMINI_API_BASE}/models"
             resp = await self._client.get(url)
             latency_ms = (time.perf_counter() - start_t) * 1000
 
@@ -72,6 +78,8 @@ class GeminiProvider(BaseLLMProvider):
                 return ProviderHealth(
                     provider=self.provider_name,
                     is_available=True,
+                    has_generation_model=self._model in models,
+                    has_embedding_model=False,
                     latency_ms=round(latency_ms, 2),
                     available_models=models[:10],
                 )
@@ -110,7 +118,7 @@ class GeminiProvider(BaseLLMProvider):
             raise AIProviderError("Gemini fallback cannot be used: GEMINI_API_KEY is not configured.", provider=self.provider_name)
 
         target_model = model or self._model
-        url = f"{GEMINI_API_BASE}/models/{target_model}:generateContent?key={self._api_key}"
+        url = f"{GEMINI_API_BASE}/models/{target_model}:generateContent"
 
         # Convert ChatMessage list to Gemini contents structure
         contents: List[Dict[str, Any]] = []
@@ -123,9 +131,7 @@ class GeminiProvider(BaseLLMProvider):
 
         body: Dict[str, Any] = {
             "contents": contents,
-            "generationConfig": {
-                "temperature": temperature,
-            },
+            "generationConfig": {},
         }
         if max_tokens:
             body["generationConfig"]["maxOutputTokens"] = max_tokens
@@ -141,7 +147,10 @@ class GeminiProvider(BaseLLMProvider):
         except (httpx.ConnectError, httpx.ConnectTimeout) as ce:
             raise ProviderUnavailableError("Could not connect to Gemini API endpoint.", provider=self.provider_name) from ce
         except httpx.ReadTimeout as re:
-            raise ProviderUnavailableError(f"Gemini API request timed out after {self._timeout_seconds}s.", provider=self.provider_name) from re
+            raise ProviderTimeoutError(
+                f"Gemini API request timed out after {self._timeout_seconds}s.",
+                provider=self.provider_name,
+            ) from re
         except Exception as ex:
             raise ProviderUnavailableError(f"Gemini request failed: {type(ex).__name__}", provider=self.provider_name) from ex
 

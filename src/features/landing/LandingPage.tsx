@@ -224,7 +224,7 @@ export function LandingPage() {
             <div className="flex flex-col justify-center space-y-6 lg:col-span-6">
               <p className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-primary">
                 <Sparkles className="size-3.5" />
-                Repository Intelligence Platform · Phase 1 Interactive Preview
+                Repository Intelligence Platform · Codebase Architecture & Deep Flow Tracing
               </p>
 
               <h1

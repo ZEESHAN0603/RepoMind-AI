@@ -3,9 +3,9 @@ services:
     name: repomind-backend
     runtime: python
     rootDir: backend
-    plan: standard
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
     healthCheckPath: /api/v1/health
     envVars:
       - key: APP_NAME
@@ -34,7 +34,7 @@ services:
         value: ollama
       - key: AI_FALLBACK_PROVIDER
         value: gemini
-      - key: OLLAMA_BASE_URL
+      - key: PRODUCTION_OLLAMA_BASE_URL
         value: https://11434-agq6j3olyzqnjz6i3vl5zgyvj4.instabox.tech
       - key: OLLAMA_AUTH_REQUIRED
         value: "true"
@@ -47,6 +47,6 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        value: gemini-1.5-flash
+        value: gemini-3.1-flash-lite
       - key: GEMINI_ALLOW_CLOUD_FALLBACK
         value: "true"

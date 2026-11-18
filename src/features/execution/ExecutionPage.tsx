@@ -55,7 +55,6 @@ import { ConfidenceBadge } from '@/components/common/ConfidenceBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorState } from '@/components/common/ErrorState';
 import { PageFadeIn } from '@/components/common/MotionPrimitives';
-import { SampleDataBanner } from '@/components/common/SampleDataBanner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -800,8 +799,6 @@ function ExecutionTracingWorkspace() {
           </div>
         )}
       </div>
-
-      <SampleDataBanner message="Sample Execution Traces — Call sequences, parameter signatures, and Verified / Inferred / Unresolved labels are Phase 1 sample data rather than live runtime tracing." />
 
       {workspaceQuery.isLoading ? (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">

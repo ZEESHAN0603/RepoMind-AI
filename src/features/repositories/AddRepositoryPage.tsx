@@ -12,7 +12,6 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { SampleDataBanner } from '@/components/common/SampleDataBanner';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -87,30 +86,43 @@ export function AddRepositoryPage() {
       queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
       setCompletedRepo(created);
       setAnalyzing(false);
-      toast.success(`Sample analysis complete for "${created.name}".`);
+      toast.success(`Repository "${created.name}" connected and queued for indexing.`);
     },
     onError: (err) => {
       setAnalyzing(false);
       toast.error(
-        err instanceof Error ? err.message : 'Repository simulation failed.'
+        err instanceof Error ? err.message : 'Repository connection failed.'
       );
     },
   });
 
-  const runSimulatedPipeline = async (
-    payload: Parameters<typeof repositoryService.addRepository>[0]
-  ) => {
-    setCompletedRepo(null);
-    setAnalyzing(true);
-    setCurrentStageIndex(0);
-
-    for (let i = 0; i < ANALYSIS_STAGES.length; i++) {
-      setCurrentStageIndex(i);
-      await new Promise((resolve) => setTimeout(resolve, 380));
-    }
-
-    addMutation.mutate(payload);
-  };
+  const uploadZipMutation = useMutation({
+    mutationFn: ({ file, name }: { file: File; name?: string }) => {
+      if (repositoryService.uploadRepositoryZip) {
+        return repositoryService.uploadRepositoryZip(file, name);
+      }
+      return repositoryService.addRepository({
+        url: `zip://${file.name}`,
+        branch: 'main',
+        name,
+        isPrivate: true,
+        sourceType: 'zip',
+      });
+    },
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['repositories'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
+      setCompletedRepo(created);
+      setAnalyzing(false);
+      toast.success(`Repository archive "${created.name}" uploaded and queued for indexing.`);
+    },
+    onError: (err) => {
+      setAnalyzing(false);
+      toast.error(
+        err instanceof Error ? err.message : 'ZIP archive upload failed.'
+      );
+    },
+  });
 
   const handleGitHubSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -123,7 +135,9 @@ export function AddRepositoryPage() {
       return;
     }
 
-    runSimulatedPipeline({
+    setCompletedRepo(null);
+    setAnalyzing(true);
+    addMutation.mutate({
       name: parsed.name,
       owner: parsed.owner,
       url: parsed.normalizedUrl,
@@ -140,17 +154,7 @@ export function AddRepositoryPage() {
       return;
     }
     setZipFile(file);
-    setUploadProgress(0);
-
-    // Simulate upload bar reaching 100%
-    let progress = 0;
-    const timer = window.setInterval(() => {
-      progress += 25;
-      setUploadProgress(Math.min(progress, 100));
-      if (progress >= 100) {
-        window.clearInterval(timer);
-      }
-    }, 120);
+    setUploadProgress(100);
   };
 
   const handleZipSubmit = () => {
@@ -158,20 +162,11 @@ export function AddRepositoryPage() {
       setZipError('Please select a .zip archive first.');
       return;
     }
-    if (uploadProgress < 100) {
-      setZipError('Wait for the simulated archive upload to complete.');
-      return;
-    }
 
     const cleanName = zipFile.name.replace(/\.zip$/i, '');
-    runSimulatedPipeline({
-      name: cleanName,
-      owner: 'local-archive',
-      url: `zip://${zipFile.name}`,
-      branch: 'main',
-      isPrivate: true,
-      sourceType: 'zip',
-    });
+    setCompletedRepo(null);
+    setAnalyzing(true);
+    uploadZipMutation.mutate({ file: zipFile, name: cleanName });
   };
 
   return (
@@ -181,12 +176,9 @@ export function AddRepositoryPage() {
           Add Repository
         </h1>
         <p className="text-sm text-muted-foreground">
-          Connect a GitHub repository URL or upload a ZIP archive to simulate repository
-          indexing.
+          Connect a GitHub repository URL or upload a ZIP archive to index your codebase.
         </p>
       </div>
-
-      <SampleDataBanner message="Phase 1 Ingestion Simulation — Connecting a GitHub URL or uploading a ZIP file simulates analysis stages locally without calling GitHub APIs or uploading source code." />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <div className="lg:col-span-7">
@@ -341,7 +333,7 @@ export function AddRepositoryPage() {
                       Drop a repository .zip file here, or click to browse
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Validates .zip format locally (no server upload in Phase 1)
+                      Accepts standard .zip repository archives up to 50MB
                     </p>
                   </div>
 

@@ -100,7 +100,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-1.5-flash"
     GEMINI_ALLOW_CLOUD_FALLBACK: bool = True
-    GEMINI_TIMEOUT_SECONDS: float = 30.0
+    GEMINI_TIMEOUT_SECONDS: float = 90.0
 
     @property
     def effective_database_url(self) -> str:
