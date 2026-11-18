@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin
@@ -25,7 +25,6 @@ class ArchitectureSnapshot(Base, TimestampMixin):
         String(36),
         ForeignKey("repositories.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True,
         index=True,
     )
     graph_data_json: Mapped[str] = mapped_column(Text, nullable=False)
@@ -41,5 +40,9 @@ class ArchitectureSnapshot(Base, TimestampMixin):
     repository: Mapped["Repository"] = relationship("Repository", back_populates="architecture_snapshot")
 
     __table_args__ = (
+        UniqueConstraint(
+            "repository_id",
+            name="uq_architecture_snapshots_repository_id",
+        ),
         Index("ix_architecture_snapshots_repo", "repository_id"),
     )

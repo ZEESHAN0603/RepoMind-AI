@@ -27,8 +27,10 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Inject database URL from Pydantic settings (normalized for asyncpg)
-config.set_main_option("sqlalchemy.url", settings.effective_database_url)
-
+config.set_main_option(
+    "sqlalchemy.url",
+    settings.effective_database_url.replace("%", "%%")
+)
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
@@ -53,11 +55,31 @@ def do_run_migrations(connection: Connection) -> None:
 
 async def run_async_migrations() -> None:
     """Run migrations in 'online' mode with async engine."""
+
+    engine_kwargs = {
+        "poolclass": pool.NullPool,
+    }
+
+    database_url = settings.effective_database_url
+
+    if database_url.startswith("postgresql+asyncpg://"):
+        engine_kwargs["connect_args"] = {
+            "ssl": "require",
+            "statement_cache_size": 0,
+            "prepared_statement_cache_size": 0,
+        }
+
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
+        **engine_kwargs,
     )
+
+    try:
+        async with connectable.connect() as connection:
+            await connection.run_sync(do_run_migrations)
+    finally:
+        await connectable.dispose()
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)

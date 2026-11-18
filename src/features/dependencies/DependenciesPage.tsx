@@ -42,7 +42,6 @@ import { ConfidenceBadge } from '@/components/common/ConfidenceBadge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { ErrorState } from '@/components/common/ErrorState';
 import { PageFadeIn } from '@/components/common/MotionPrimitives';
-import { SampleDataBanner } from '@/components/common/SampleDataBanner';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -503,8 +502,6 @@ function DependenciesWorkspace() {
           {refreshMutation.isPending ? 'Refreshing...' : 'Refresh Analysis'}
         </Button>
       </div>
-
-      <SampleDataBanner message="Sample Dependency Report — Circular dependencies, import edges, and refactoring suggestions shown below are Phase 1 sample records rather than real static analysis findings." />
 
       {/* 5 Summary Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">

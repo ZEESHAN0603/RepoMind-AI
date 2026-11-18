@@ -100,13 +100,11 @@ class RepositoryDocumentVersion(Base, TimestampMixin):
         String(36),
         ForeignKey("repository_documents.id", ondelete="CASCADE"),
         nullable=False,
-        index=True,
     )
     repository_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("repositories.id", ondelete="CASCADE"),
         nullable=False,
-        index=True,
     )
     version_number: Mapped[int] = mapped_column(
         Integer,
@@ -130,6 +128,8 @@ class RepositoryDocumentVersion(Base, TimestampMixin):
     document: Mapped["RepositoryDocument"] = relationship("RepositoryDocument", back_populates="versions")
 
     __table_args__ = (
+        Index("ix_repository_document_versions_doc_id", "document_id"),
+        Index("ix_repository_document_versions_repo_id", "repository_id"),
         Index("ix_doc_versions_doc_num", "document_id", "version_number", unique=True),
         Index("ix_doc_versions_repo_time", "repository_id", "created_at"),
     )

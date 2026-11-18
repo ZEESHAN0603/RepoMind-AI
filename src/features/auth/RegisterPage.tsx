@@ -62,7 +62,7 @@ export function RegisterPage() {
     try {
       await register({ name, email, password });
       setRegistered(true);
-      toast.success('Mock account created successfully.');
+      toast.success('Account created successfully.');
       setTimeout(() => {
         navigate(APP_ROUTES.DASHBOARD, { replace: true });
       }, 700);
@@ -89,7 +89,7 @@ export function RegisterPage() {
               Create your RepoMind account
             </CardTitle>
             <CardDescription>
-              Phase 1 mock registration. Set up a sample developer workspace.
+              Set up your developer workspace and start analyzing repositories.
             </CardDescription>
           </CardHeader>
 
@@ -201,8 +201,7 @@ export function RegisterPage() {
                   className="mt-0.5 size-4 rounded border-input accent-primary"
                 />
                 <span>
-                  I accept the Phase 1 workspace terms and understand that sample mock
-                  data is used in this preview.
+                  I accept the terms of service and workspace privacy policy.
                 </span>
               </label>
 

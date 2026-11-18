@@ -34,14 +34,11 @@ class RepositoryUpdateRun(Base, TimestampMixin):
     base_version_id: Mapped[Optional[str]] = mapped_column(
         String(36),
         ForeignKey("repository_versions.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True,
+        nullable=True
     )
     target_version_id: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("repository_versions.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        ForeignKey("repository_versions.id", ondelete="CASCADE")
     )
     base_commit_sha: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     target_commit_sha: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)

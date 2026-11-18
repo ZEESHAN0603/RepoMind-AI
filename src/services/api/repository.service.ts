@@ -41,6 +41,7 @@ export interface RepositoryService {
   getRepositoryOverview(id: string): Promise<RepositoryOverviewDetails>;
   getDashboardSummary(): Promise<DashboardSummary>;
   addRepository(input: AddRepositoryInput): Promise<Repository>;
+  uploadRepositoryZip?(file: File, name?: string): Promise<Repository>;
   toggleArchiveRepository(id: string): Promise<Repository>;
   deleteRepository(id: string): Promise<void>;
 }

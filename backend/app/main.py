@@ -15,7 +15,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 import app.models  # Ensure all models are registered on Base.metadata
 from app.db.base import Base
-from app.db.session import check_db_health, engine
+from app.db.session import async_session_maker, check_db_health, engine
 
 
 @asynccontextmanager
@@ -31,6 +31,29 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         db_connected = await check_db_health()
         if db_connected:
             logger.info("Database connectivity established successfully.")
+            # Recover orphaned/interrupted ingestion jobs from previous server restarts
+            try:
+                from sqlalchemy import select
+                from app.models.ingestion_job import RepositoryIngestionJob
+                from app.models.repository import Repository
+                active_statuses = ["queued", "cloning", "extracting", "discovering", "analyzing", "processing"]
+                async with async_session_maker() as session:
+                    res = await session.execute(
+                        select(RepositoryIngestionJob).where(RepositoryIngestionJob.status.in_(active_statuses))
+                    )
+                    interrupted_jobs = res.scalars().all()
+                    if interrupted_jobs:
+                        for j in interrupted_jobs:
+                            j.status = "failed"
+                            j.current_stage = "Interrupted by server restart"
+                            j.error_message = "Ingestion was interrupted due to server restart or deployment"
+                            repo = await session.get(Repository, j.repository_id)
+                            if repo and repo.status == "ingesting":
+                                repo.status = "failed"
+                        await session.commit()
+                        logger.info("Cleaned up %d interrupted ingestion job(s) from previous run.", len(interrupted_jobs))
+            except Exception as cleanup_ex:
+                logger.warning("Could not execute orphaned job cleanup during startup: %s", cleanup_ex)
         else:
             logger.warning("Database connectivity check returned false.")
     except Exception as ex:

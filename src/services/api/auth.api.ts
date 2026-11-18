@@ -1,8 +1,6 @@
 import type { AuthService } from './intelligence.service';
 import type { AuthUser, LoginCredentials, RegisterPayload } from '@/types';
-import { mockAuthService } from '@/services/mock/auth.mock';
-
-const API_BASE = '/api/v1';
+import { API_BASE, apiFetch } from './client';
 
 function buildInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -30,6 +28,8 @@ export class ApiAuthService implements AuthService {
           const errorData = await res.json();
           if (errorData.detail) {
             errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+          } else if (errorData.error?.message) {
+            errorMsg = errorData.error.message;
           }
         } catch {
           // Keep default message
@@ -46,12 +46,7 @@ export class ApiAuthService implements AuthService {
       }
 
       // Fetch current user details
-      const meRes = await fetch(`${API_BASE}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`,
-        },
-      });
-
+      const meRes = await apiFetch('/auth/me');
       if (meRes.ok) {
         const userData = await meRes.json();
         return {
@@ -72,10 +67,8 @@ export class ApiAuthService implements AuthService {
         provider: 'email',
       };
     } catch (err) {
-      // If server is not reachable, fall back to mock service for preview/offline mode
       if (err instanceof TypeError && err.message.includes('fetch')) {
-        console.warn('Backend server unavailable, using mock auth.');
-        return mockAuthService.login(credentials);
+        throw new Error('RepoMind backend server is unreachable. Please verify your connection.');
       }
       throw err;
     }
@@ -101,6 +94,8 @@ export class ApiAuthService implements AuthService {
           const errorData = await res.json();
           if (errorData.detail) {
             errorMsg = typeof errorData.detail === 'string' ? errorData.detail : JSON.stringify(errorData.detail);
+          } else if (errorData.error?.message) {
+            errorMsg = errorData.error.message;
           }
         } catch {
           // Keep default
@@ -116,15 +111,26 @@ export class ApiAuthService implements AuthService {
       });
     } catch (err) {
       if (err instanceof TypeError && err.message.includes('fetch')) {
-        console.warn('Backend server unavailable, using mock register.');
-        return mockAuthService.register(payload);
+        throw new Error('RepoMind backend server is unreachable. Please verify your connection.');
       }
       throw err;
     }
   }
 
   async loginWithGitHub(): Promise<AuthUser> {
-    return mockAuthService.loginWithGitHub();
+    try {
+      const res = await apiFetch('/auth/github/connect');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authorization_url && typeof window !== 'undefined') {
+          window.location.href = data.authorization_url;
+          return new Promise(() => {}); // Halts until redirect
+        }
+      }
+    } catch {
+      // Fall through to error
+    }
+    throw new Error('GitHub OAuth is not currently configured on this environment.');
   }
 
   async logout(): Promise<void> {
@@ -143,7 +149,7 @@ export class ApiAuthService implements AuthService {
           body: JSON.stringify({ refresh_token: refreshToken }),
         });
       } catch {
-        // Ignore logout request failure
+        // Ignore logout network failure
       }
     }
 

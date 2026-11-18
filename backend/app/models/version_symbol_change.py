@@ -25,16 +25,14 @@ class VersionSymbolChange(Base, TimestampMixin):
     update_run_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("repository_update_runs.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        nullable=False
     )
     file_change_id: Mapped[Optional[str]] = mapped_column(
         String(36),
         ForeignKey("version_file_changes.id", ondelete="CASCADE"),
-        nullable=True,
-        index=True,
+        nullable=True
     )
-    symbol_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    symbol_name: Mapped[str] = mapped_column(String(255), nullable=False)
     symbol_type: Mapped[str] = mapped_column(String(50), nullable=False)  # function, method, class, interface, endpoint
     scope: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     change_type: Mapped[str] = mapped_column(String(20), nullable=False)  # added, modified, deleted, renamed

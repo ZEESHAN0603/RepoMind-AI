@@ -1,11 +1,15 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
+import httpx
 
 from app.ai.base import BaseLLMProvider
+from app.ai.gemini_provider import GeminiProvider
 from app.ai.exceptions import (
     AIProviderError,
     ProviderAuthenticationError,
     ProviderConnectionError,
+    ProviderTimeoutError,
+    ProviderErrorCategory,
     QuotaExceededError,
 )
 from app.ai.provider_manager import ProviderManager
@@ -132,3 +136,29 @@ def test_sensitive_secret_redaction_before_cloud():
     assert "super_secret_token_abc" not in sanitized
     assert "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" not in sanitized
     assert "[REDACTED_SECRET]" in sanitized
+@pytest.mark.asyncio
+async def test_gemini_read_timeout_raises_timeout_error(monkeypatch):
+    """Verifies Gemini read timeouts are classified as recoverable timeout errors."""
+    monkeypatch.setattr(settings, "GEMINI_API_KEY", "mock-gemini-key")
+
+    provider = GeminiProvider(
+        api_key="mock-gemini-key",
+        model="gemini-3.8-flash",
+        timeout_seconds=5,
+    )
+
+    try:
+        with pytest.raises(ProviderTimeoutError) as exc_info:
+            async def mock_post(*args, **kwargs):
+                raise httpx.ReadTimeout("Read timed out")
+
+            monkeypatch.setattr(provider._client, "post", mock_post)
+
+            await provider.generate_chat(
+                messages=[ChatMessage(role="user", content="Hello")]
+            )
+
+        assert exc_info.value.category == ProviderErrorCategory.TIMEOUT_ERROR
+        assert exc_info.value.is_recoverable is True
+    finally:
+        await provider._client.aclose()

@@ -61,7 +61,7 @@ export function LoginPage() {
 
     try {
       await login({ email, password, rememberMe });
-      toast.success('Signed in to RepoMind workspace (mock session).');
+      toast.success('Signed in to RepoMind workspace.');
       navigate(redirectTo, { replace: true });
     } catch {
       // Error is handled in store state
@@ -73,7 +73,7 @@ export function LoginPage() {
     setValidationError(null);
     try {
       await loginWithGitHub();
-      toast.success('Signed in with mock GitHub profile.');
+      toast.success('Connecting with GitHub...');
       navigate(redirectTo, { replace: true });
     } catch {
       // Error is handled in store state
@@ -108,8 +108,7 @@ export function LoginPage() {
               Sign in to RepoMind
             </CardTitle>
             <CardDescription>
-              Phase 1 mock authentication. Enter any valid email or use the prefilled
-              demo credentials.
+              Enter your account credentials to access your repositories.
             </CardDescription>
           </CardHeader>
 
@@ -210,7 +209,7 @@ export function LoginPage() {
               disabled={isLoading}
             >
               <Github className="mr-2 size-4" />
-              Mock GitHub Sign In
+              Sign in with GitHub
             </Button>
           </CardContent>
 

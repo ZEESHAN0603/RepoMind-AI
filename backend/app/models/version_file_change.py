@@ -24,8 +24,7 @@ class VersionFileChange(Base, TimestampMixin):
     update_run_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("repository_update_runs.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        nullable=False
     )
     path: Mapped[str] = mapped_column(String(1000), nullable=False)
     old_path: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)

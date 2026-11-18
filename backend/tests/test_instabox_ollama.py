@@ -68,7 +68,7 @@ async def test_ollama_chat_valid_request_and_endpoint():
         assert payload["messages"][1]["role"] == "user"
         assert payload["options"]["temperature"] == 0.1
         assert "num_ctx" in payload["options"]
-        assert call_kwargs["params"] == {"_token": "test_token_123"}
+        assert call_kwargs["params"] == {}
 
     await provider.close()
 
@@ -227,7 +227,7 @@ async def test_ollama_embedding_valid_single_and_batch():
 
         call_args, call_kwargs = mock_post.call_args
         assert call_args[0] == "/api/embed"
-        assert call_kwargs["params"] == {"_token": "test_token_123"}
+        assert call_kwargs["params"] == {}
 
     await provider.close()
 
