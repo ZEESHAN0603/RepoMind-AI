@@ -195,15 +195,42 @@ class UpdateService:
                         except Exception:
                             current_files[rel] = ""
 
-            # If base version has existing file changes in DB, read them or compare with current
+            # Resolve baseline files from snapshot or database
             base_file_map: Dict[str, str] = {}
-            if base_version:
-                prior_runs = await update_repo.list_update_runs_by_repo(repository_id)
-                for pr in prior_runs:
-                    if pr.target_version_id == base_version.id:
-                        for pfc in pr.file_changes:
-                            if pfc.change_type != "deleted":
-                                base_file_map[pfc.path] = ""
+
+            # 1. Attempt to load base files from workspace snapshot
+            base_snap_tag = base_version.version_tag if base_version else "baseline"
+            snap_path = self.workspace_service.get_snapshot_path(user_id, repository_id, base_snap_tag)
+            if not snap_path.exists() and base_snap_tag != "baseline":
+                snap_path = self.workspace_service.get_snapshot_path(user_id, repository_id, "baseline")
+
+            if snap_path.exists():
+                for p in snap_path.rglob("*"):
+                    if p.is_file() and not any(part.startswith(".git") for part in p.parts):
+                        rel = p.relative_to(snap_path).as_posix()
+                        try:
+                            if p.stat().st_size <= 1024 * 1024:
+                                base_file_map[rel] = p.read_text(encoding="utf-8", errors="ignore")
+                            else:
+                                base_file_map[rel] = ""
+                        except Exception:
+                            base_file_map[rel] = ""
+
+            # 2. Fallback to database files if snapshot not present
+            if not base_file_map:
+                if base_version:
+                    prior_runs = await update_repo.list_update_runs_by_repo(repository_id)
+                    for pr in prior_runs:
+                        if pr.target_version_id == base_version.id:
+                            for pfc in pr.file_changes:
+                                if pfc.change_type != "deleted":
+                                    base_file_map[pfc.path] = ""
+
+                if not base_file_map:
+                    db_files = await file_repo.list_files_by_repo(repository_id)
+                    for db_f in db_files:
+                        if db_f.file_type == "file":
+                            base_file_map[db_f.path] = ""
 
             file_diff_records = UpdateDetectionService.detect_file_changes(
                 base_files=base_file_map,
@@ -217,7 +244,7 @@ class UpdateService:
         for fc in file_diff_records:
             if fc["file_category"] == "source":
                 target_code = ""
-                base_code = ""
+                base_code = base_file_map.get(fc.get("old_path") or fc["path"], "")
                 # Attempt to read current target code from disk
                 target_file_disk = workspace_path / fc["path"]
                 if target_file_disk.is_file():
@@ -359,7 +386,33 @@ class UpdateService:
         if impact_entities:
             await update_repo.save_impact_records_batch(impact_entities)
 
+        # Mark affected approved documentation sections as stale (outdated)
+        impacted_doc_types: Set[str] = set()
+        if file_diff_records:
+            impacted_doc_types.add("update_changelog")
+        for fd in file_diff_records:
+            cat = fd.get("file_category")
+            if cat == "manifest":
+                impacted_doc_types.update(["dependencies", "readme"])
+            elif cat == "source":
+                impacted_doc_types.update(["api", "code_reference", "execution_flow", "architecture"])
+            elif cat == "config":
+                impacted_doc_types.update(["readme", "architecture"])
+            elif cat == "documentation":
+                impacted_doc_types.add("readme")
+
+        if impacted_doc_types:
+            from app.repositories.documentation_repository import DocumentationRepository
+            doc_repo = DocumentationRepository(session)
+            await doc_repo.mark_documents_as_stale(repository_id, list(impacted_doc_types))
+
         await session.commit()
+
+        # Create updated version snapshot on disk
+        try:
+            self.workspace_service.create_snapshot(user_id, repository_id, target_version.version_tag)
+        except Exception as snap_err:
+            logger.warning("Could not snapshot target version %s: %s", target_version.version_tag, snap_err)
 
         # Re-fetch populated run
         full_run = await update_repo.get_update_run_by_id(saved_run.id)

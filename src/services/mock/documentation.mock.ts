@@ -12,6 +12,8 @@ function buildDefaultDocs(repositoryId: string): DocumentationDocument[] {
       title: 'README Overview',
       description: 'Project purpose, quickstart commands, and environment overview.',
       lastUpdated: now,
+      status: 'approved',
+      versionNumber: 1,
       confidence: 'verified',
       content: `# Cloud Gateway (Sample Documentation)
 
@@ -40,6 +42,8 @@ npm run dev
       title: 'Architecture Documentation',
       description: 'Layered system boundaries, request flow diagram, and component roles.',
       lastUpdated: now,
+      status: 'approved',
+      versionNumber: 1,
       confidence: 'verified',
       content: `# System Architecture
 
@@ -69,6 +73,8 @@ flowchart LR
       title: 'Module Documentation',
       description: 'Detailed breakdown of core internal modules and exported symbols.',
       lastUpdated: now,
+      status: 'approved',
+      versionNumber: 1,
       confidence: 'inferred',
       content: `# Core Module Reference
 
@@ -89,6 +95,8 @@ flowchart LR
       title: 'API Documentation',
       description: 'HTTP endpoints, auth headers, and status codes.',
       lastUpdated: now,
+      status: 'approved',
+      versionNumber: 1,
       confidence: 'verified',
       content: `# API Endpoints
 
@@ -116,6 +124,8 @@ Forwards authenticated tenant traffic to registered upstream clusters.
       title: 'Database Documentation',
       description: 'Session revocation schema and tenant quota storage design.',
       lastUpdated: now,
+      status: 'approved',
+      versionNumber: 1,
       confidence: 'inferred',
       content: `# Data & State Storage
 
@@ -141,6 +151,8 @@ erDiagram
       title: 'Developer Onboarding',
       description: 'Checklist for new engineers joining the repository.',
       lastUpdated: now,
+      status: 'approved',
+      versionNumber: 1,
       confidence: 'inferred',
       content: `# Developer Onboarding Guide
 

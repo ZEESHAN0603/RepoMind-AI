@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: repomind-backend
+    runtime: python
+    rootDir: backend
+    plan: standard
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: APP_NAME
+        value: RepoMind
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "60"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+      - key: ALLOWED_ORIGINS
+        value: '["https://repomind.vercel.app","http://localhost:5173","http://localhost:3000"]'
+      - key: AI_PRIMARY_PROVIDER
+        value: ollama
+      - key: AI_FALLBACK_PROVIDER
+        value: gemini
+      - key: OLLAMA_BASE_URL
+        value: https://11434-agq6j3olyzqnjz6i3vl5zgyvj4.instabox.tech
+      - key: OLLAMA_AUTH_REQUIRED
+        value: "true"
+      - key: OLLAMA_ACCESS_TOKEN
+        sync: false
+      - key: OLLAMA_GENERATION_MODEL
+        value: qwen3.5:4b
+      - key: OLLAMA_EMBEDDING_MODEL
+        value: nomic-embed-text
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+      - key: GEMINI_ALLOW_CLOUD_FALLBACK
+        value: "true"

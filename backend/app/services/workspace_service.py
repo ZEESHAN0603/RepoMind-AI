@@ -66,3 +66,26 @@ class WorkspaceService:
         if temp_dir.exists() and temp_dir != self.temp_root:
             shutil.rmtree(temp_dir, ignore_errors=True)
 
+    def get_snapshot_path(self, user_id: str, repository_id: str, snapshot_id: str = "baseline") -> Path:
+        """Returns isolated on-disk path for a repository version snapshot."""
+        safe_user = Path(user_id).name
+        safe_repo = Path(repository_id).name
+        safe_snap = Path(snapshot_id.replace(":", "_").replace("/", "_")).name
+        snap_path = (self.base_dir / "snapshots" / safe_user / safe_repo / safe_snap).resolve()
+        return snap_path
+
+    def create_snapshot(self, user_id: str, repository_id: str, snapshot_id: str = "baseline") -> Path:
+        """Creates an on-disk snapshot of the current repository workspace state."""
+        ws_path = self.get_repository_workspace_path(user_id, repository_id)
+        snap_path = self.get_snapshot_path(user_id, repository_id, snapshot_id)
+        if snap_path.exists():
+            shutil.rmtree(snap_path, ignore_errors=True)
+        snap_path.parent.mkdir(parents=True, exist_ok=True)
+        if ws_path.exists():
+            shutil.copytree(
+                ws_path,
+                snap_path,
+                ignore=shutil.ignore_patterns(".git*", "__pycache__", "node_modules", ".venv", "dist", "coverage"),
+            )
+        return snap_path
+

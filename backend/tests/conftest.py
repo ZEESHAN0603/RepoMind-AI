@@ -31,6 +31,10 @@ TestingSessionLocal = async_sessionmaker(
 session_module.async_session_maker = TestingSessionLocal
 ingestion_service_module.async_session_maker = TestingSessionLocal
 
+# Disable rate limiter by default in test suite to prevent IP-level exhaustion across tests
+from app.core.limiter import limiter
+limiter.enabled = False
+
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 def mock_github_service(monkeypatch):

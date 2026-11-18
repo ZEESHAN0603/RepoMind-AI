@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     PORT: int = 8000
     HOST: str = "127.0.0.1"
+    RATE_LIMIT_ENABLED: bool = True
 
     # URLs & CORS
     BACKEND_URL: str = "http://localhost:8000"

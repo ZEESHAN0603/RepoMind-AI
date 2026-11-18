@@ -1,8 +1,9 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.dependencies import get_current_user
+from app.core.limiter import limiter
 from app.db.session import get_db
 from app.models.chat_conversation import ChatConversation
 from app.models.chat_message import ChatMessage
@@ -127,7 +128,9 @@ async def delete_conversation(
     summary="Send message / ask question",
     description="Processes a question through the RAG pipeline, queries Ollama (with Gemini fallback), and returns an evidence-grounded answer with citations.",
 )
+@limiter.limit("30/minute")
 async def send_message(
+    request: Request,
     repository_id: str,
     conversation_id: str,
     payload: SendMessageRequest,

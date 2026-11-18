@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.dependencies import get_current_user
+from app.core.limiter import limiter
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.token import MessageResponse, RefreshTokenRequest, Token
@@ -18,7 +19,9 @@ router = APIRouter()
     summary="Register new user account",
     description="Registers a new user with Argon2 password hashing and unique email validation.",
 )
+@limiter.limit("15/minute")
 async def register(
+    request: Request,
     payload: UserRegister,
     db: AsyncSession = Depends(get_db),
 ) -> UserResponse:
@@ -32,7 +35,9 @@ async def register(
     summary="Authenticate user",
     description="Verifies user credentials and returns JWT access and refresh tokens.",
 )
+@limiter.limit("15/minute")
 async def login(
+    request: Request,
     payload: UserLogin,
     db: AsyncSession = Depends(get_db),
 ) -> Token:

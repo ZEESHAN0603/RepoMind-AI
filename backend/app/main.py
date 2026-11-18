@@ -8,8 +8,12 @@ from pydantic import BaseModel
 from app.api.v1.router import api_v1_router
 from app.core.config import settings
 from app.core.error_handlers import register_exception_handlers
+from app.core.limiter import limiter
 from app.core.logging import logger, setup_logging
 from app.core.middleware import RequestCorrelationMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+import app.models  # Ensure all models are registered on Base.metadata
 from app.db.base import Base
 from app.db.session import check_db_health, engine
 
@@ -48,6 +52,10 @@ app = FastAPI(
     openapi_url="/openapi.json",
     lifespan=lifespan,
 )
+
+# Attach rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Correlation ID and Request Logging Middleware
 app.add_middleware(RequestCorrelationMiddleware)
